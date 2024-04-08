@@ -234,17 +234,22 @@ int main(int n_args, const char *ll_args[])
 	if (inicialitza_joc() !=0)    /* intenta crear el taulell de joc */
 		exit(4);   /* aborta si hi ha algun problema amb taulell */
 
+	int	id_user, id_ball, id_pc;
+
+	pthread_create(&id_user, NULL, user_functionality, NULL);
+	pthread_create(&id_ball, NULL, ,);
+	pthread_create(&id_pc, NULL, ,);
 	do				/********** bucle principal del joc **********/
 	{
-		tec = win_gettec();
-		if (tec != 0)
-			mou_paleta_usuari(tec);
-		mou_paleta_ordinador();
 		cont = moure_pilota();
 		win_retard(retard);
 	}
 	while ((tec != TEC_RETURN) && (cont==-1) && ((moviments > 0) || moviments == -1));
 	
+	
+
+	//join
+
 	win_fi();
 
 	if (tec == TEC_RETURN)

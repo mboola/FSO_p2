@@ -65,3 +65,9 @@ int		moure_pilota(void)
 	}
 	return(result);
 }
+
+void	*ball_functionality()
+{
+	
+}
+
