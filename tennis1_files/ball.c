@@ -8,7 +8,7 @@
 /*	 0 ==> la pilota ha sortit per la porteria esquerra		*/
 /*	>0 ==> la pilota ha sortit per la porteria dreta		*/
 
-int		moure_pilota(void)
+static int	moure_pilota(void)
 {
 	int f_h, c_h, result;
 	char rh,rv,rd,pd;
@@ -64,4 +64,14 @@ int		moure_pilota(void)
 		pil_pc += pil_vc;
 	}
 	return(result);
+}
+
+void	*ball_functionality()
+{
+	while(!end)
+	{
+		control = moure_pilota();
+		win_retard(retard);
+	}
+	pthread_exit(0);
 }

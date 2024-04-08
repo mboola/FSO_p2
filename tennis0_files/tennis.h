@@ -31,8 +31,7 @@ extern int moviments;		/* numero max de moviments paletes per acabar el joc */
 
 
 void	mou_paleta_ordinador(void);
+void	mou_paleta_usuari(int tecla);
 int		moure_pilota(void);
-
-void	*user_functionality();
 
 #endif
