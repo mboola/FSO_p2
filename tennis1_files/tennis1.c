@@ -65,9 +65,8 @@ int l_pal;			/* longitud de les paletes */
 
 int ipu_pf, ipu_pc;      	/* posicio del la paleta d'usuari */
 
-t_paleta paletes[MAX_PAL];	/* paletes del programa */
-
-t_crono	crono;
+t_paleta	paletes[MAX_PAL];	/* paletes del programa */
+t_timer		timer;
 
 int ipil_pf, ipil_pc;		/* posicio de la pilota, en valor enter */
 float pil_pf, pil_pc;		/* posicio de la pilota, en valor real */
@@ -149,7 +148,7 @@ void carrega_parametres(const char *nom_fit)
 			fclose(fit);
 			exit(5);
 		}
-		paletes[n_paletes].id = n_paletes + '0' + 1;
+		paletes[n_paletes].id = n_paletes + '0';
 		n_paletes++;
 	}
 	fclose(fit);			/* fitxer carregat: tot OK! */
@@ -252,6 +251,7 @@ int main(int n_args, const char *ll_args[])
 	pthread_join(id_ball, NULL);
 	for (i = 0; i < n_paletes; i++)
 		pthread_join(id_system[i], NULL);
+	pthread_join(id_timer, NULL);
 
 	win_fi();
 

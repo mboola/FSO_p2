@@ -4,16 +4,16 @@
 
 void	*timer_functionality()
 {
-	crono.min = 0;
-	crono.sec = 0;
+	timer.min = 0;
+	timer.sec = 0;
 	while(!end)
 	{
 		sleep(1);
-		crono.sec++;
-		if (crono.sec <= 60)
+		timer.sec++;
+		if (timer.sec <= 60)
 		{
-			crono.min++;
-			crono.sec = 0;
+			timer.min++;
+			timer.sec = 0;
 		}
 	}
 	pthread_exit(0);

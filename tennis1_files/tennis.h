@@ -23,19 +23,19 @@ typedef struct s_paleta
 	char id;
 }		t_paleta;
 
-typedef struct s_crono
+typedef	struct s_timer
 {
 	char	sec;
 	char	min;
-}		t_crono;
+}		t_timer;
 
 extern int n_fil, n_col, m_por;	/* dimensions del taulell i porteries */
 extern int l_pal;			/* longitud de les paletes */
 
 extern int ipu_pf, ipu_pc;      	/* posicio del la paleta d'usuari */
 
-extern t_paleta paletes[MAX_PAL];	/* array de paletes */
-extern t_crono	crono;
+extern t_paleta	paletes[MAX_PAL];	/* array de paletes */
+extern t_timer	timer;
 
 extern int ipil_pf, ipil_pc;		/* posicio de la pilota, en valor enter */
 extern float pil_pf, pil_pc;		/* posicio de la pilota, en valor real */
