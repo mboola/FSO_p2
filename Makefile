@@ -33,6 +33,6 @@ tennis2: TENNIS_MAIN := tennis2.c
 tennis0 tennis1 tennis2: winsuport.o winsuport.h
 	gcc ${FLAGS_TENNIS} ${FILES_COMP} winsuport.o -o ${TENNIS_EXE} -lcurses ${INCLUDE} -I ${TENNIS_SRC}
 
-clean: 
+clean:
 	rm winsuport.o
 	rm ${EXECS}

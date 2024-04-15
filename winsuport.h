@@ -32,6 +32,8 @@
 #define MAX_RET 5.0
 #define MAX_PAL 9
 
+#include <stdio.h>		/* incloure definicions de funcions estandard */
+#include <stdlib.h>
 #include <stdint.h> /* definició de intptr_t per màquines de 64 bits */
 
 /* Definicions de rutines publiques del fitxer "winsuport.c" */

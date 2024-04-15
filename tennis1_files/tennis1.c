@@ -54,8 +54,6 @@
 /*	6  ==>  no s'ha pogut crear el camp de joc (no pot iniciar CURSES)   */
 /*****************************************************************************/
 
-#include <stdio.h>		/* incloure definicions de funcions estandard */
-#include <stdlib.h>
 #include "winsuport.h"		/* incloure definicions de funcions propies */
 #include "tennis.h"
 
@@ -148,7 +146,7 @@ void carrega_parametres(const char *nom_fit)
 			fclose(fit);
 			exit(5);
 		}
-		paletes[n_paletes].id = n_paletes + '0';
+		paletes[n_paletes].id = n_paletes + '0' + 1;
 		n_paletes++;
 	}
 	fclose(fit);			/* fitxer carregat: tot OK! */
@@ -160,7 +158,7 @@ int inicialitza_joc(void)
 {
 	int i, i_port, f_port, retwin;
 	int j;
-	char strin[51];
+	char strin[69];
 
 	retwin = win_ini(&n_fil,&n_col,'+',INVERS);   /* intenta crear taulell */
 
@@ -206,8 +204,8 @@ int inicialitza_joc(void)
 	pil_pf = ipil_pf; pil_pc = ipil_pc;	/* fixar valor real posicio pilota */
 	win_escricar(ipil_pf, ipil_pc, '.',INVERS);	/* dibuix inicial pilota */
 
-	sprintf(strin,"Tecles: \'%c\'-> amunt, \'%c\'-> avall, RETURN-> sortir.",
-			TEC_AMUNT, TEC_AVALL);
+	sprintf(strin,"Tecles: \'%c\'-> amunt, \'%c\'-> avall, RETURN-> sortir. Temps: [%.2d:%.2d].",
+			TEC_AMUNT, TEC_AVALL, 0, 0);
 	win_escristr(strin);
 	return(0);
 }
