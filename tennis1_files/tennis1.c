@@ -54,38 +54,27 @@
 /*	6  ==>  no s'ha pogut crear el camp de joc (no pot iniciar CURSES)   */
 /*****************************************************************************/
 
-
-
 #include <stdio.h>		/* incloure definicions de funcions estandard */
 #include <stdlib.h>
 #include "winsuport.h"		/* incloure definicions de funcions propies */
 #include "tennis.h"
 
-#define MIN_FIL 7		/* definir limits de variables globals */
-#define MAX_FIL 25
-#define MIN_COL 10
-#define MAX_COL 80
-#define MIN_PAL 3
-#define MIN_VEL -1.0
-#define MAX_VEL 1.0
-#define MIN_RET 0.0
-#define MAX_RET 5.0
-
-
 /* variables globals */
 int n_fil, n_col, m_por;	/* dimensions del taulell i porteries */
 int l_pal;			/* longitud de les paletes */
-float v_pal;			/* velocitat de la paleta del programa */
-float pal_ret;			/* percentatge de retard de la paleta */
 
 int ipu_pf, ipu_pc;      	/* posicio del la paleta d'usuari */
-int ipo_pf, ipo_pc;      	/* posicio del la paleta de l'ordinador */
-float po_pf;	/* pos. vertical de la paleta de l'ordinador, en valor real */
+
+t_paleta paletes[MAX_PAL];	/* paletes del programa */
+
+t_crono	crono;
 
 int ipil_pf, ipil_pc;		/* posicio de la pilota, en valor enter */
 float pil_pf, pil_pc;		/* posicio de la pilota, en valor real */
 float pil_vf, pil_vc;		/* velocitat de la pilota, en valor real*/
 float pil_ret;			/* percentatge de retard de la pilota */
+
+int	n_paletes;	/* nombre total de paletes carregades des del fitxer */
 
 int retard;		/* valor del retard de moviment, en mil.lisegons */
 int moviments;		/* numero max de moviments paletes per acabar el joc */
@@ -143,20 +132,25 @@ void carrega_parametres(const char *nom_fit)
 		exit(4);
 	}
 
-	if (!feof(fit))
-		fscanf(fit,"%d %d %f %f\n",&ipo_pf,&ipo_pc,&v_pal,&pal_ret);
-	if ((ipo_pf < 1) || (ipo_pf+l_pal > n_fil-2) ||
-		(ipo_pc < 5) || (ipo_pc > n_col-2) ||
-		(v_pal < MIN_VEL) || (v_pal > MAX_VEL) ||
-		(pal_ret < MIN_RET) || (pal_ret > MAX_RET))
+	n_paletes = 0;
+	while (!feof(fit))
 	{
-		fprintf(stderr,"Error: parametres paleta ordinador incorrectes:\n");
-		fprintf(stderr,"\t1 =< ipo_pf (%d) =< n_fil-l_pal-3 (%d)\n",ipo_pf,(n_fil-l_pal-3));
-		fprintf(stderr,"\t5 =< ipo_pc (%d) =< n_col-2 (%d)\n",ipo_pc,(n_col-2));
-		fprintf(stderr,"\t%.1f =< v_pal (%.1f) =< %.1f\n",MIN_VEL,v_pal,MAX_VEL);
-		fprintf(stderr,"\t%.1f =< pal_ret (%.1f) =< %.1f\n",MIN_RET,pal_ret,MAX_RET);
-		fclose(fit);
-		exit(5);
+		fscanf(fit,"%d %d %f %f\n",&(paletes[n_paletes]).ipo_pf,&(paletes[n_paletes]).ipo_pc,&(paletes[n_paletes]).v_pal,&(paletes[n_paletes]).pal_ret);
+		if ((paletes[n_paletes].ipo_pf < 1) || (paletes[n_paletes].ipo_pf+l_pal > n_fil-2) ||
+			(paletes[n_paletes].ipo_pc < 5) || (paletes[n_paletes].ipo_pc > n_col-2) ||
+			(paletes[n_paletes].v_pal < MIN_VEL) || (paletes[n_paletes].v_pal > MAX_VEL) ||
+			(paletes[n_paletes].pal_ret < MIN_RET) || (paletes[n_paletes].pal_ret > MAX_RET))
+		{
+			fprintf(stderr,"Error: parametres paleta ordinador incorrectes:\n");
+			fprintf(stderr,"\t1 =< ipo_pf (%d) =< n_fil-l_pal-3 (%d)\n",paletes[n_paletes].ipo_pf,(n_fil-l_pal-3));
+			fprintf(stderr,"\t5 =< ipo_pc (%d) =< n_col-2 (%d)\n",paletes[n_paletes].ipo_pc,(n_col-2));
+			fprintf(stderr,"\t%.1f =< v_pal (%.1f) =< %.1f\n",MIN_VEL,paletes[n_paletes].v_pal,MAX_VEL);
+			fprintf(stderr,"\t%.1f =< pal_ret (%.1f) =< %.1f\n",MIN_RET,paletes[n_paletes].pal_ret,MAX_RET);
+			fclose(fit);
+			exit(5);
+		}
+		paletes[n_paletes].id = n_paletes + '0' + 1;
+		n_paletes++;
 	}
 	fclose(fit);			/* fitxer carregat: tot OK! */
 }
@@ -166,6 +160,7 @@ void carrega_parametres(const char *nom_fit)
 int inicialitza_joc(void)
 {
 	int i, i_port, f_port, retwin;
+	int j;
 	char strin[51];
 
 	retwin = win_ini(&n_fil,&n_col,'+',INVERS);   /* intenta crear taulell */
@@ -203,9 +198,11 @@ int inicialitza_joc(void)
 	for (i=0; i< l_pal; i++)	    /* dibuixar paleta inicialment */
 	{
 		win_escricar(ipu_pf +i, ipu_pc, '0',INVERS);
-		win_escricar(ipo_pf +i, ipo_pc, '1',INVERS);
+		for (j = 0; j < n_paletes; j++)
+			win_escricar(paletes[j].ipo_pf + i, paletes[j].ipo_pc, paletes[j].id, INVERS);
 	}
-	po_pf = ipo_pf;		/* fixar valor real paleta ordinador */
+	for (j = 0; j < n_paletes; j++)	/* fixar valor real paleta ordinador */
+		paletes[j].po_pf = paletes[j].ipo_pf;
 
 	pil_pf = ipil_pf; pil_pc = ipil_pc;	/* fixar valor real posicio pilota */
 	win_escricar(ipil_pf, ipil_pc, '.',INVERS);	/* dibuix inicial pilota */
@@ -219,7 +216,9 @@ int inicialitza_joc(void)
 /* programa principal				    */
 int main(int n_args, const char *ll_args[])
 {
-	pthread_t id_user, id_ball, id_system;	/* variables locals */
+	pthread_t 	id_user, id_ball, id_timer;	/* variables locals */
+	pthread_t	id_system[MAX_PAL];
+	int	i;
 
 	if ((n_args != 3) && (n_args !=4))
 	{
@@ -240,7 +239,9 @@ int main(int n_args, const char *ll_args[])
 
 	pthread_create(&id_user, NULL, user_functionality, NULL);
 	pthread_create(&id_ball, NULL, ball_functionality, NULL);
-	pthread_create(&id_system, NULL, system_functionality, NULL);
+	for (i = 0; i < n_paletes; i++)
+		pthread_create(&(id_system[i]), NULL, system_functionality, (void*)(&(paletes[i])));
+	pthread_create(&id_timer, NULL, timer_functionality, NULL);
 
 	/********** bucle principal del joc **********/
 	while ((tecla != TEC_RETURN) && (control == -1) && ((moviments > 0) || moviments == -1));
@@ -249,7 +250,8 @@ int main(int n_args, const char *ll_args[])
 
 	pthread_join(id_user, NULL);
 	pthread_join(id_ball, NULL);
-	pthread_join(id_system, NULL);
+	for (i = 0; i < n_paletes; i++)
+		pthread_join(id_system[i], NULL);
 
 	win_fi();
 

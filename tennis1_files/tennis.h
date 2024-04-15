@@ -11,15 +11,31 @@
 
 # include "winsuport.h"
 # include <pthread.h>
+# include <unistd.h>
+
+typedef struct s_paleta
+{
+	int	ipo_pf;		/* posicio del la paleta de l'ordinador */
+	int	ipo_pc;		/* posicio del la paleta de l'ordinador */
+	float po_pf;	/* pos. vertical de la paleta de l'ordinador, en valor real */
+	float v_pal;	/* velocitat de la paleta del programa */
+	float pal_ret;	/* percentatge de retard de la paleta */
+	char id;
+}		t_paleta;
+
+typedef struct s_crono
+{
+	char	sec;
+	char	min;
+}		t_crono;
 
 extern int n_fil, n_col, m_por;	/* dimensions del taulell i porteries */
 extern int l_pal;			/* longitud de les paletes */
-extern float v_pal;			/* velocitat de la paleta del programa */
-extern float pal_ret;			/* percentatge de retard de la paleta */
 
 extern int ipu_pf, ipu_pc;      	/* posicio del la paleta d'usuari */
-extern int ipo_pf, ipo_pc;      	/* posicio del la paleta de l'ordinador */
-extern float po_pf;	/* pos. vertical de la paleta de l'ordinador, en valor real */
+
+extern t_paleta paletes[MAX_PAL];	/* array de paletes */
+extern t_crono	crono;
 
 extern int ipil_pf, ipil_pc;		/* posicio de la pilota, en valor enter */
 extern float pil_pf, pil_pc;		/* posicio de la pilota, en valor real */
@@ -37,5 +53,6 @@ extern int  end;
 void	*system_functionality();
 void	*user_functionality();
 void	*ball_functionality();
+void	*timer_functionality();
 
 #endif

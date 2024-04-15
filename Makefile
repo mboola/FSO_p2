@@ -6,7 +6,8 @@ OPTIMIZATION	=	-03
 FILES_COMP	=	${FILES} ${TENNIS_SRC}${TENNIS_MAIN}
 
 ####### FILES #######
-FILES	=	${TENNIS_SRC}ball.c ${TENNIS_SRC}computer.c ${TENNIS_SRC}user.c
+FILES	=	${TENNIS_SRC}ball.c ${TENNIS_SRC}computer.c ${TENNIS_SRC}user.c \
+			${TENNIS_SRC}timer.c
 HEADER	=	${TENNIS_SRC}tennis.h
 
 EXECS	=	tennis0_exe tennis1_exe tennis2_exe
