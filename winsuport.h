@@ -21,7 +21,18 @@
 #define TEC_RETURN  13  	/* tecla de Carry Return */
 #define TEC_ESPAI   ' '  	/* tecla de barra espaiadora */
 
+#define MIN_FIL 7		/* definir limits de variables globals */
+#define MAX_FIL 25
+#define MIN_COL 10
+#define MAX_COL 80
+#define MIN_PAL 3
+#define MIN_VEL -1.0
+#define MAX_VEL 1.0
+#define MIN_RET 0.0
+#define MAX_RET 5.0
+#define MAX_PAL 9
 
+#include <stdint.h> /* definició de intptr_t per màquines de 64 bits */
 
 /* Definicions de rutines publiques del fitxer "winsuport.c" */
 
