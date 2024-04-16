@@ -79,9 +79,13 @@ int	n_paletes;	/* nombre total de paletes carregades des del fitxer */
 int retard;		/* valor del retard de moviment, en mil.lisegons */
 int moviments;		/* numero max de moviments paletes per acabar el joc */
 
+char	creation_failed;
+
+char	start;	//Var to initialize the execution of the threads
+char	end;	//Var to stop the executation of the threads
+
 int	tecla;
 int	control;
-int	end;
 
 /* funcio per realitzar la carrega dels parametres de joc emmagatzemats */
 /* dins un fitxer de text, el nom del qual es passa per referencia en   */
@@ -213,19 +217,80 @@ int inicialitza_joc(void)
 	return(0);
 }
 
+static void	end_program(t_lock_data *lock_data)
+{
+	creation_failed = 1;
+	if (lock_data->threads_created[0] == 1)
+		pthread_join(lock_data->id_user, NULL);
+	if (lock_data->threads_created[1] == 1)
+		pthread_join(lock_data->id_ball, NULL);
+	if (lock_data->threads_created[2] == 1)
+		pthread_join(lock_data->id_timer, NULL);
+	for (int i = 0; i < n_paletes; i++)
+	{
+		if (lock_data->threads_created[i + 3] == 1)
+			pthread_join(lock_data->id_system[i], NULL);
+	}
+	pthread_mutex_destroy(&screen_control); // Screen sempahore destroyed
+	pthread_mutex_destroy(&movement_control); // movement sempahore destroyed
+	win_fi();
+	printf("Program initialization failed.\n");
+	exit(2);
+}
+
+static void	init_threads(t_lock_data *lock_data)
+{
+	int	i;
+
+	pthread_mutex_init(&screen_control, NULL);	// Screen sempahore initialized
+	pthread_mutex_init(&movement_control, NULL);	// movement sempahore initialized
+
+	creation_failed = 0;
+	for (i = 0; i < MAX_THREADS; i++)
+		lock_data->threads_created[i] = 0;
+
+	if (pthread_create(&(lock_data->id_user), NULL, user_functionality, NULL))
+		end_program(lock_data);
+	lock_data->threads_created[0] = 1;
+	if (pthread_create(&(lock_data->id_ball), NULL, ball_functionality, NULL))
+		end_program(lock_data);
+	lock_data->threads_created[1] = 1;
+	if (pthread_create(&(lock_data->id_timer), NULL, timer_functionality, NULL))
+		end_program(lock_data);
+	lock_data->threads_created[2] = 1;
+	for (i = 0; i < n_paletes; i++)
+	{
+		if (pthread_create(&(lock_data->id_system[i]), NULL, system_functionality, (void*)(&(paletes[i]))))
+			end_program(lock_data);
+		lock_data->threads_created[i + 3] = 1;
+	}
+}
+
+static void	end_threads(t_lock_data lock_data)
+{
+	int	i;
+
+	pthread_join(lock_data.id_user, NULL);
+	pthread_join(lock_data.id_ball, NULL);
+	pthread_join(lock_data.id_timer, NULL);
+	for (i = 0; i < n_paletes; i++)
+		pthread_join(lock_data.id_system[i], NULL);
+	pthread_mutex_destroy(&screen_control); // Screen sempahore destroyed
+	pthread_mutex_destroy(&movement_control); // movement sempahore destroyed
+	win_fi();
+}
+
 /* programa principal				    */
 int main(int n_args, const char *ll_args[])
 {
-	pthread_t 	id_user, id_ball, id_timer;	/* variables locals */
-	pthread_t	id_system[MAX_PAL];
-	int	i;
+	t_lock_data	lock_data;
 
 	if ((n_args != 3) && (n_args !=4))
 	{
 		fprintf(stderr,"Comanda: tennis0 fit_param moviments [retard]\n");
 		exit(1);
 	}
-	end = 0;
+
 	carrega_parametres(ll_args[1]);
 	moviments=atoi(ll_args[2]);
 
@@ -237,29 +302,18 @@ int main(int n_args, const char *ll_args[])
 	if (inicialitza_joc() !=0)    /* intenta crear el taulell de joc */
 		exit(4);   /* aborta si hi ha algun problema amb taulell */
 	
-	pthread_mutex_init(&screen_control, NULL);	// Screen sempahore initialized
-	pthread_mutex_init(&movement_control, NULL);	// movement sempahore initialized
-
-	pthread_create(&id_user, NULL, user_functionality, NULL);
-	pthread_create(&id_ball, NULL, ball_functionality, NULL);
-	for (i = 0; i < n_paletes; i++)
-		pthread_create(&(id_system[i]), NULL, system_functionality, (void*)(&(paletes[i])));
-	pthread_create(&id_timer, NULL, timer_functionality, NULL);
+	start = 0;
+	end = 0;
+	creation_failed = 0;
+	init_threads(&lock_data);
+	control = -1;
+	start = 1;
 
 	/********** bucle principal del joc **********/
 	while ((tecla != TEC_RETURN) && (control == -1) && ((moviments > 0) || moviments == -1));
 
 	end = 1;
-
-	pthread_join(id_user, NULL);
-	pthread_join(id_ball, NULL);
-	for (i = 0; i < n_paletes; i++)
-		pthread_join(id_system[i], NULL);
-	pthread_join(id_timer, NULL);
-
-	pthread_mutex_destroy(&screen_control); // Screen sempahore destroyed
-	pthread_mutex_destroy(&movement_control); // movement sempahore destroyed
-	win_fi();
+	end_threads(lock_data);
 
 	if (tecla == TEC_RETURN)
 		printf("S'ha aturat el joc amb la tecla RETURN!\n");

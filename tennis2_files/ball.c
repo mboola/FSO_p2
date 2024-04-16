@@ -74,10 +74,14 @@ static int	moure_pilota(void)
 
 void	*ball_functionality()
 {
-	while(!end)
+	while (!start && !creation_failed);
+	if (!creation_failed)
 	{
-		control = moure_pilota();
-		win_retard(retard);
+		while(!end)
+		{
+			control = moure_pilota();
+			win_retard(retard);
+		}
 	}
 	pthread_exit(0);
 }

@@ -55,10 +55,14 @@ void	*system_functionality(void *paleta_ptr)
 	t_paleta	*paleta;
 
 	paleta = (t_paleta*)paleta_ptr;
-	while(!end)
+	while (!start && !creation_failed);
+	if (!creation_failed)
 	{
-		mou_paleta_ordinador(paleta);
-		win_retard(retard);
+		while(!end)
+		{
+			mou_paleta_ordinador(paleta);
+			win_retard(retard);
+		}
 	}
 	pthread_exit(0);
 }

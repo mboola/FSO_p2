@@ -35,12 +35,16 @@ static void	mou_paleta_usuari(int tecla)
 
 void	*user_functionality()
 {
-	while(!end)
+	while (!start && !creation_failed);
+	if (!creation_failed)
 	{
-		tecla = win_gettec();
-		if (tecla != 0)
-			mou_paleta_usuari(tecla);
-		win_retard(retard);
+		while(!end)
+		{
+			tecla = win_gettec();
+			if (tecla != 0)
+				mou_paleta_usuari(tecla);
+			win_retard(retard);
+		}
 	}
 	pthread_exit(0);
 }

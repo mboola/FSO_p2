@@ -13,6 +13,10 @@
 # include <pthread.h>
 # include <unistd.h>
 
+# ifndef MAX_THREADS
+#  define MAX_THREADS 12
+# endif
+
 typedef struct s_paleta
 {
 	int	ipo_pf;		/* posicio del la paleta de l'ordinador */
@@ -29,6 +33,15 @@ typedef	struct s_timer
 	char	min;
 }		t_timer;
 
+typedef struct s_lock_data
+{
+	pthread_t 	id_user;
+	pthread_t	id_ball;
+	pthread_t	id_timer;
+	pthread_t	id_system[MAX_PAL];
+	char		threads_created[MAX_THREADS];
+}		t_lock_data;
+
 extern int n_fil, n_col, m_por;	/* dimensions del taulell i porteries */
 extern int l_pal;			/* longitud de les paletes */
 
@@ -39,6 +52,11 @@ extern t_timer	timer;
 
 extern pthread_mutex_t	screen_control;	//Lock to control the resource screen
 extern pthread_mutex_t	movement_control;	//Lock to control the moviments value
+
+extern char	creation_failed;
+
+extern char	start;	//Var to initialize the execution of the threads
+extern char	end;	//Var to stop the executation of the threads
 
 extern int ipil_pf, ipil_pc;		/* posicio de la pilota, en valor enter */
 extern float pil_pf, pil_pc;		/* posicio de la pilota, en valor real */
@@ -51,7 +69,6 @@ extern int moviments;		/* numero max de moviments paletes per acabar el joc */
 //custom globals used
 extern int	tecla;
 extern int  control;
-extern int  end;
 
 void	*system_functionality();
 void	*user_functionality();
