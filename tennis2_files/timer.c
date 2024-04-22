@@ -5,7 +5,7 @@
 
 void	*timer_functionality()
 {
-	char	strin[71];
+	char	strin[20];
 
 	timer.min = 0;
 	timer.sec = 0;
@@ -23,8 +23,7 @@ void	*timer_functionality()
 					timer.min++;
 					timer.sec = 0;
 				}
-				sprintf(strin,"Tecles: \'%c\'-> amunt, \'%c\'-> avall, RETURN-> sortir. Temps: [%.2d:%.2d].",
-					TEC_AMUNT, TEC_AVALL, timer.min, timer.sec);
+				sprintf(strin,"Temps: [%.2d:%.2d].", timer.min, timer.sec);
 				pthread_mutex_lock(&screen_control); /* tanca semafor */
 				win_escristr(strin);
 				pthread_mutex_unlock(&screen_control); /* obre semafor */

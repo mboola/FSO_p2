@@ -47,7 +47,7 @@ void	*user_functionality()
 			pthread_mutex_unlock(&screen_control); /* obre semafor */ 
 			if (tecla == TEC_ESPAI)
 				pause_game = (pause_game ? 0 : 1);
-			else if (tecla == TEC_RETURN)
+			else if (tecla == TRUE_TEC_RETURN)
 				end = 1;
 			else if (tecla != 0 && !pause_game)
 			{

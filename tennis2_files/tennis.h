@@ -17,6 +17,10 @@
 #  define MAX_THREADS 12
 # endif
 
+# ifndef TRUE_TEC_RETURN
+#  define TRUE_TEC_RETURN 127
+# endif
+
 typedef struct s_paleta
 {
 	int	ipo_pf;		/* posicio del la paleta de l'ordinador */

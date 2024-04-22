@@ -212,8 +212,7 @@ int inicialitza_joc(void)
 	pil_pf = ipil_pf; pil_pc = ipil_pc;	/* fixar valor real posicio pilota */
 	win_escricar(ipil_pf, ipil_pc, '.',INVERS);	/* dibuix inicial pilota */
 
-	sprintf(strin,"Tecles: \'%c\'-> amunt, \'%c\'-> avall, RETURN-> sortir. Temps: [%.2d:%.2d].",
-			TEC_AMUNT, TEC_AVALL, 0, 0);
+	sprintf(strin,"Temps: [%.2d:%.2d].", 0, 0);
 	win_escristr(strin);
 	return(0);
 }
@@ -312,16 +311,15 @@ int main(int n_args, const char *ll_args[])
 	start = 1;
 
 	/********** bucle principal del joc **********/
-	while ((tecla != TEC_RETURN) && (control == -1) && ((moviments > 0) || moviments == -1));
+	while ((tecla != TEC_RETURN) && (control == -1) && ((moviments > 0) || moviments == -1) && !end);
 
 	end = 1;
 	end_threads(lock_data);
 
-	if (tecla == TEC_RETURN)
-		printf("S'ha aturat el joc amb la tecla RETURN!\n");
-	else if (control == 0 || moviments == 0)
+	if (control == 0 || moviments == 0)
 		printf("Ha guanyat l'ordinador!\n");
 	else
 		printf("Ha guanyat l'usuari!\n");
+	printf("El temps total de joc ha estat de: [%.2d:%.2d].\n", timer.min, timer.sec);
 	return(0);
 }
