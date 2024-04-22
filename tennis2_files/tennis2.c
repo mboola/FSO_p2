@@ -66,8 +66,8 @@ int ipu_pf, ipu_pc;      	/* posicio del la paleta d'usuari */
 t_paleta	paletes[MAX_PAL];	/* paletes del programa */
 t_timer		timer;
 
-pthread_mutex_t	screen_control;		//Lock to control the resource screen
-pthread_mutex_t	movement_control;	//Lock to control the moviments value
+pthread_mutex_t	screen_control = PTHREAD_MUTEX_INITIALIZER;		//Lock to control the resource screen
+pthread_mutex_t	movement_control = PTHREAD_MUTEX_INITIALIZER;	//Lock to control the moviments value
 
 int ipil_pf, ipil_pc;		/* posicio de la pilota, en valor enter */
 float pil_pf, pil_pc;		/* posicio de la pilota, en valor real */
@@ -83,6 +83,7 @@ char	creation_failed;
 
 char	start;	//Var to initialize the execution of the threads
 char	end;	//Var to stop the executation of the threads
+char	pause_game;	//Var to pause the executation of the threads
 
 int	tecla;
 int	control;
@@ -304,9 +305,10 @@ int main(int n_args, const char *ll_args[])
 	
 	start = 0;
 	end = 0;
+	pause_game = 0;
 	creation_failed = 0;
-	init_threads(&lock_data);
 	control = -1;
+	init_threads(&lock_data);
 	start = 1;
 
 	/********** bucle principal del joc **********/

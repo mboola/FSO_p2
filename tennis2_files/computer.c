@@ -14,9 +14,9 @@ static void mou_paleta_ordinador(t_paleta *paleta)
 	{
 		if (paleta->v_pal > 0.0)			/* verificar moviment cap avall */
 		{
+			pthread_mutex_lock(&screen_control); /* tanca semafor */
 			if (win_quincar(f_h+l_pal-1,paleta->ipo_pc) == ' ')   /* si no hi ha obstacle */
 			{
-				pthread_mutex_lock(&screen_control); /* tanca semafor */
 				win_escricar(paleta->ipo_pf,paleta->ipo_pc,' ',NO_INV);      /* esborra primer bloc */
 				paleta->po_pf += paleta->v_pal; paleta->ipo_pf = paleta->po_pf;		/* actualitza posicio */
 				win_escricar(paleta->ipo_pf+l_pal-1,paleta->ipo_pc,paleta->id,INVERS); /* impr. ultim bloc */
@@ -27,13 +27,16 @@ static void mou_paleta_ordinador(t_paleta *paleta)
 				pthread_mutex_unlock(&movement_control); /* obre semafor */
 			}
 			else		/* si hi ha obstacle, canvia el sentit del moviment */
+			{
+				pthread_mutex_unlock(&screen_control); /* obre semafor */
 				paleta->v_pal = -paleta->v_pal;
+			}
 		}
 		else			/* verificar moviment cap amunt */
 		{
+			pthread_mutex_lock(&screen_control); /* tanca semafor */
 			if (win_quincar(f_h,paleta->ipo_pc) == ' ')        /* si no hi ha obstacle */
 			{
-				pthread_mutex_lock(&screen_control); /* tanca semafor */
 				win_escricar(paleta->ipo_pf+l_pal-1,paleta->ipo_pc,' ',NO_INV); /* esbo. ultim bloc */
 				paleta->po_pf += paleta->v_pal; paleta->ipo_pf = paleta->po_pf;		/* actualitza posicio */
 				win_escricar(paleta->ipo_pf,paleta->ipo_pc,paleta->id,INVERS);	/* impr. primer bloc */
@@ -44,7 +47,10 @@ static void mou_paleta_ordinador(t_paleta *paleta)
 				pthread_mutex_unlock(&movement_control); /* obre semafor */
 			}
 			else		/* si hi ha obstacle, canvia el sentit del moviment */
+			{
+				pthread_mutex_unlock(&screen_control); /* obre semafor */
 				paleta->v_pal = -paleta->v_pal;
+			}
 		}
 	}
 	else paleta->po_pf += paleta->v_pal; 	/* actualitza posicio vertical real de la paleta */
@@ -60,8 +66,11 @@ void	*system_functionality(void *paleta_ptr)
 	{
 		while(!end)
 		{
-			mou_paleta_ordinador(paleta);
-			win_retard(retard);
+			if (!pause_game)
+			{
+				mou_paleta_ordinador(paleta);
+				win_retard(retard);
+			}
 		}
 	}
 	pthread_exit(0);

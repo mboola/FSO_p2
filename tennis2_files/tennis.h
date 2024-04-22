@@ -57,6 +57,7 @@ extern char	creation_failed;
 
 extern char	start;	//Var to initialize the execution of the threads
 extern char	end;	//Var to stop the executation of the threads
+extern char	pause_game;	//Var to pause the executation of the threads
 
 extern int ipil_pf, ipil_pc;		/* posicio de la pilota, en valor enter */
 extern float pil_pf, pil_pc;		/* posicio de la pilota, en valor real */

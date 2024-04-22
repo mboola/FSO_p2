@@ -7,7 +7,7 @@ void	*timer_functionality()
 {
 	timer.min = 0;
 	timer.sec = 0;
-	char strin[69];
+	char strin[71];
 	while(!end)
 	{
 		sleep(1);
