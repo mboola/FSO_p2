@@ -81,11 +81,10 @@ void	*ball_functionality()
 	{
 		while(!end)
 		{
-			if (!pause_game)
-			{
-				control = moure_pilota();
-				win_retard(retard);
-			}
+			pthread_mutex_lock(&ball_pause_control);
+			control = moure_pilota();
+			pthread_mutex_unlock(&ball_pause_control);
+			win_retard(retard);
 		}
 	}
 	pthread_exit(0);

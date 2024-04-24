@@ -37,6 +37,10 @@ static void	mou_paleta_usuari(int tecla)
 
 void	*user_functionality()
 {
+	char	pause_control;
+	int		i;
+
+	pause_control = 0;
 	while (!start && !creation_failed);
 	if (!creation_failed)
 	{
@@ -46,10 +50,25 @@ void	*user_functionality()
 			tecla = win_gettec();
 			pthread_mutex_unlock(&screen_control); /* obre semafor */ 
 			if (tecla == TEC_ESPAI)
-				pause_game = (pause_game ? 0 : 1);
-			else if (tecla == TRUE_TEC_RETURN)
-				end = 1;
-			else if (tecla != 0 && !pause_game)
+			{
+				if (!pause_control)
+				{
+					pthread_mutex_lock(&timer_pause_control);
+					pthread_mutex_lock(&ball_pause_control);
+					for (i = 0; i < n_paletes; i++)
+						pthread_mutex_lock(&computer_pause_control[i]);
+					pause_control = 1;
+				}
+				else
+				{
+					pthread_mutex_unlock(&timer_pause_control);
+					pthread_mutex_unlock(&ball_pause_control);
+					for (i = 0; i < n_paletes; i++)
+						pthread_mutex_unlock(&computer_pause_control[i]);
+					pause_control = 0;
+				}
+			}
+			else if (tecla != 0 && !pause_control)
 			{
 				mou_paleta_usuari(tecla);
 				win_retard(retard);

@@ -68,6 +68,10 @@ t_timer		timer;
 
 pthread_mutex_t	screen_control = PTHREAD_MUTEX_INITIALIZER;		//Lock to control the resource screen
 pthread_mutex_t	movement_control = PTHREAD_MUTEX_INITIALIZER;	//Lock to control the moviments value
+pthread_mutex_t user_pause_control = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t	timer_pause_control = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t	ball_pause_control = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t	computer_pause_control[MAX_PAL];
 
 int ipil_pf, ipil_pc;		/* posicio de la pilota, en valor enter */
 float pil_pf, pil_pc;		/* posicio de la pilota, en valor real */
@@ -217,52 +221,109 @@ int inicialitza_joc(void)
 	return(0);
 }
 
-static void	end_program(t_lock_data *lock_data)
+static void	destroy_mutex(pthread_mutex_t *mutex_to_destroy, char *value)
 {
-	creation_failed = 1;
-	if (lock_data->threads_created[0] == 1)
-		pthread_join(lock_data->id_user, NULL);
-	if (lock_data->threads_created[1] == 1)
-		pthread_join(lock_data->id_ball, NULL);
-	if (lock_data->threads_created[2] == 1)
-		pthread_join(lock_data->id_timer, NULL);
-	for (int i = 0; i < n_paletes; i++)
-	{
-		if (lock_data->threads_created[i + 3] == 1)
-			pthread_join(lock_data->id_system[i], NULL);
-	}
-	pthread_mutex_destroy(&screen_control); // Screen sempahore destroyed
-	pthread_mutex_destroy(&movement_control); // movement sempahore destroyed
-	win_fi();
+	if (*value == 0)
+		exit (2);
+	pthread_mutex_destroy(mutex_to_destroy);	// Lock destroyed
+	*value -= 1;
+}
+
+static void	mutex_creation_error(char mutex_init)
+{
+	char	value;
+	int		i;
+
+	value = mutex_init;
 	printf("Program initialization failed.\n");
-	exit(2);
+	destroy_mutex(&screen_control, &value);		// Screen lock destroyed
+	destroy_mutex(&movement_control, &value);	// Movement lock destroyed
+	destroy_mutex(&user_pause_control, &value);	// User pause lock destroyed
+	destroy_mutex(&timer_pause_control, &value);// Timer pause lock destroyed
+	destroy_mutex(&ball_pause_control, &value);	// Ball pause lock destroyed
+	for (i = 0; i < n_paletes; i++)
+		destroy_mutex(&computer_pause_control[i], &value);	// Computer pause lock destroyed
+}
+
+static void	thread_creation_error(char threads_init, t_lock_data *lock_data, char mutex_init)
+{
+	int	i;
+
+	creation_failed = 1;
+	if (threads_init == 0)
+		goto end;
+	pthread_join(lock_data->id_user, NULL);
+	threads_init--;
+	if (threads_init == 0)
+		goto end;
+	pthread_join(lock_data->id_ball, NULL);
+	threads_init--;
+	if (threads_init == 0)
+		goto end;
+	pthread_join(lock_data->id_timer, NULL);
+	threads_init--;
+	if (threads_init == 0)
+		goto end;
+	i = 0;
+	while (threads_init)
+	{
+		pthread_join(lock_data->id_computer[i], NULL);
+		threads_init--;
+		i++;
+	}
+	end:
+	win_fi();
+	mutex_creation_error(mutex_init);
 }
 
 static void	init_threads(t_lock_data *lock_data)
 {
-	int	i;
+	int		i;
+	char	mutex_init;
+	char	threads_init;
 
-	pthread_mutex_init(&screen_control, NULL);	// Screen sempahore initialized
-	pthread_mutex_init(&movement_control, NULL);	// movement sempahore initialized
-
+	mutex_init = 0;
+	threads_init = 0;
 	creation_failed = 0;
-	for (i = 0; i < MAX_THREADS; i++)
-		lock_data->threads_created[i] = 0;
 
-	if (pthread_create(&(lock_data->id_user), NULL, user_functionality, NULL))
-		end_program(lock_data);
-	lock_data->threads_created[0] = 1;
-	if (pthread_create(&(lock_data->id_ball), NULL, ball_functionality, NULL))
-		end_program(lock_data);
-	lock_data->threads_created[1] = 1;
-	if (pthread_create(&(lock_data->id_timer), NULL, timer_functionality, NULL))
-		end_program(lock_data);
-	lock_data->threads_created[2] = 1;
+	//Create locks used
+	if (pthread_mutex_init(&screen_control, NULL))		// Screen lock initialized
+		mutex_creation_error(mutex_init);
+	mutex_init++;
+	if (pthread_mutex_init(&movement_control, NULL))	// Movement lock initialized
+		mutex_creation_error(mutex_init);
+	mutex_init++;
+	if (pthread_mutex_init(&user_pause_control, NULL))
+		mutex_creation_error(mutex_init);
+	mutex_init++;
+	if (pthread_mutex_init(&timer_pause_control, NULL))
+		mutex_creation_error(mutex_init);
+	mutex_init++;
+	if (pthread_mutex_init(&ball_pause_control, NULL))
+		mutex_creation_error(mutex_init);
+	mutex_init++;
 	for (i = 0; i < n_paletes; i++)
 	{
-		if (pthread_create(&(lock_data->id_system[i]), NULL, system_functionality, (void*)(&(paletes[i]))))
-			end_program(lock_data);
-		lock_data->threads_created[i + 3] = 1;
+		if (pthread_mutex_init(&computer_pause_control[i], NULL))
+			mutex_creation_error(mutex_init);
+		mutex_init++;
+	}
+
+	//Create threads used
+	if (pthread_create(&(lock_data->id_user), NULL, user_functionality, NULL))
+		thread_creation_error(threads_init, lock_data, mutex_init);
+	threads_init++;
+	if (pthread_create(&(lock_data->id_ball), NULL, ball_functionality, NULL))
+		thread_creation_error(threads_init, lock_data, mutex_init);
+	threads_init++;
+	if (pthread_create(&(lock_data->id_timer), NULL, timer_functionality, NULL))
+		thread_creation_error(threads_init, lock_data, mutex_init);
+	threads_init++;
+	for (i = 0; i < n_paletes; i++)
+	{
+		if (pthread_create(&(lock_data->id_computer[i]), NULL, system_functionality, ((void*)(&(paletes[i])))))
+			thread_creation_error(threads_init, lock_data, mutex_init);
+		threads_init++;
 	}
 }
 
@@ -274,9 +335,15 @@ static void	end_threads(t_lock_data lock_data)
 	pthread_join(lock_data.id_ball, NULL);
 	pthread_join(lock_data.id_timer, NULL);
 	for (i = 0; i < n_paletes; i++)
-		pthread_join(lock_data.id_system[i], NULL);
-	pthread_mutex_destroy(&screen_control); // Screen sempahore destroyed
-	pthread_mutex_destroy(&movement_control); // movement sempahore destroyed
+		pthread_join(lock_data.id_computer[i], NULL);
+
+	pthread_mutex_destroy(&screen_control);		// Screen sempahore destroyed
+	pthread_mutex_destroy(&movement_control);	// movement sempahore destroyed
+	pthread_mutex_destroy(&user_pause_control);		// Pause lock initialized
+	pthread_mutex_destroy(&timer_pause_control);	// Pause lock initialized
+	pthread_mutex_destroy(&ball_pause_control);		// Pause lock initialized
+	for (i = 0; i < n_paletes; i++)
+		pthread_mutex_destroy(&computer_pause_control[i]);		// Pause lock initialized
 	win_fi();
 }
 

@@ -14,20 +14,19 @@ void	*timer_functionality()
 	{
 		while(!end)
 		{
-			if (!pause_game)
+			sleep(1);
+			pthread_mutex_lock(&timer_pause_control);
+			timer.sec++;
+			if (timer.sec >= 60)
 			{
-				sleep(1);
-				timer.sec++;
-				if (timer.sec >= 60)
-				{
-					timer.min++;
-					timer.sec = 0;
-				}
-				sprintf(strin,"Temps: [%.2d:%.2d].", timer.min, timer.sec);
-				pthread_mutex_lock(&screen_control); /* tanca semafor */
-				win_escristr(strin);
-				pthread_mutex_unlock(&screen_control); /* obre semafor */
+				timer.min++;
+				timer.sec = 0;
 			}
+			sprintf(strin,"Temps: [%.2d:%.2d].", timer.min, timer.sec);
+			pthread_mutex_lock(&screen_control); /* tanca semafor */
+			win_escristr(strin);
+			pthread_mutex_unlock(&screen_control); /* obre semafor */
+			pthread_mutex_unlock(&timer_pause_control);
 		}
 	}
 	pthread_exit(0);

@@ -14,11 +14,7 @@
 # include <unistd.h>
 
 # ifndef MAX_THREADS
-#  define MAX_THREADS 12
-# endif
-
-# ifndef TRUE_TEC_RETURN
-#  define TRUE_TEC_RETURN 127
+#  define MAX_THREADS 9
 # endif
 
 typedef struct s_paleta
@@ -42,8 +38,7 @@ typedef struct s_lock_data
 	pthread_t 	id_user;
 	pthread_t	id_ball;
 	pthread_t	id_timer;
-	pthread_t	id_system[MAX_PAL];
-	char		threads_created[MAX_THREADS];
+	pthread_t	id_computer[MAX_PAL];
 }		t_lock_data;
 
 extern int n_fil, n_col, m_por;	/* dimensions del taulell i porteries */
@@ -54,8 +49,11 @@ extern int ipu_pf, ipu_pc;      	/* posicio del la paleta d'usuari */
 extern t_paleta	paletes[MAX_PAL];	/* array de paletes */
 extern t_timer	timer;
 
-extern pthread_mutex_t	screen_control;	//Lock to control the resource screen
+extern pthread_mutex_t	screen_control;		//Lock to control the resource screen
 extern pthread_mutex_t	movement_control;	//Lock to control the moviments value
+extern pthread_mutex_t	timer_pause_control;
+extern pthread_mutex_t	ball_pause_control;
+extern pthread_mutex_t	computer_pause_control[MAX_PAL];
 
 extern char	creation_failed;
 
@@ -68,8 +66,9 @@ extern float pil_pf, pil_pc;		/* posicio de la pilota, en valor real */
 extern float pil_vf, pil_vc;		/* velocitat de la pilota, en valor real*/
 extern float pil_ret;			/* percentatge de retard de la pilota */
 
-extern int retard;		/* valor del retard de moviment, en mil.lisegons */
-extern int moviments;		/* numero max de moviments paletes per acabar el joc */
+extern int	n_paletes;
+extern int	retard;		/* valor del retard de moviment, en mil.lisegons */
+extern int	moviments;		/* numero max de moviments paletes per acabar el joc */
 
 //custom globals used
 extern int	tecla;

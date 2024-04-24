@@ -59,18 +59,19 @@ static void mou_paleta_ordinador(t_paleta *paleta)
 void	*system_functionality(void *paleta_ptr)
 {
 	t_paleta	*paleta;
+	int			i;
 
 	paleta = (t_paleta*)paleta_ptr;
+	i = paleta->id - '0' - 1;
 	while (!start && !creation_failed);
 	if (!creation_failed)
 	{
 		while(!end)
 		{
-			if (!pause_game)
-			{
-				mou_paleta_ordinador(paleta);
-				win_retard(retard);
-			}
+			pthread_mutex_lock(&computer_pause_control[i]);
+			mou_paleta_ordinador(paleta);
+			pthread_mutex_unlock(&computer_pause_control[i]);
+			win_retard(retard);
 		}
 	}
 	pthread_exit(0);
