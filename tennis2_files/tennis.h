@@ -57,6 +57,7 @@ extern pthread_mutex_t	computer_pause_control[MAX_PAL];
 
 extern char	creation_failed;
 
+extern char	count_moves;
 extern char	start;	//Var to initialize the execution of the threads
 extern char	end;	//Var to stop the executation of the threads
 extern char	pause_game;	//Var to pause the executation of the threads
@@ -66,6 +67,7 @@ extern float pil_pf, pil_pc;		/* posicio de la pilota, en valor real */
 extern float pil_vf, pil_vc;		/* velocitat de la pilota, en valor real*/
 extern float pil_ret;			/* percentatge de retard de la pilota */
 
+extern int	total_moves;
 extern int	n_paletes;
 extern int	retard;		/* valor del retard de moviment, en mil.lisegons */
 extern int	moviments;		/* numero max de moviments paletes per acabar el joc */

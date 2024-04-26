@@ -6,7 +6,8 @@
 /* velocitat de la paleta (variable global v_pal) */
 static void mou_paleta_ordinador(t_paleta *paleta)
 {
-	int f_h;
+	int		f_h;
+	char	strin[60];
 	/* char rh,rv,rd; */
 
 	f_h = paleta->po_pf + paleta->v_pal;		/* posicio hipotetica de la paleta */
@@ -22,8 +23,14 @@ static void mou_paleta_ordinador(t_paleta *paleta)
 				win_escricar(paleta->ipo_pf+l_pal-1,paleta->ipo_pc,paleta->id,INVERS); /* impr. ultim bloc */
 				pthread_mutex_unlock(&screen_control); /* obre semafor */
 				pthread_mutex_lock(&movement_control); /* tanca semafor */
-				if (moviments > 0)
+				if (count_moves && moviments > 0)
+				{
 					moviments--;    /* he fet un moviment de la paleta */
+					sprintf(strin,"Temps: [%.2d:%.2d]. Moviments: [%d/%d].", timer.min, timer.sec, moviments, total_moves);
+					pthread_mutex_lock(&screen_control); /* tanca semafor */
+					win_escristr(strin);
+					pthread_mutex_unlock(&screen_control); /* obre semafor */ 
+				}
 				pthread_mutex_unlock(&movement_control); /* obre semafor */
 			}
 			else		/* si hi ha obstacle, canvia el sentit del moviment */
@@ -42,8 +49,14 @@ static void mou_paleta_ordinador(t_paleta *paleta)
 				win_escricar(paleta->ipo_pf,paleta->ipo_pc,paleta->id,INVERS);	/* impr. primer bloc */
 				pthread_mutex_unlock(&screen_control); /* obre semafor */ 
 				pthread_mutex_lock(&movement_control); /* tanca semafor */
-				if (moviments > 0)
+				if (count_moves && moviments > 0)
+				{
 					moviments--;    /* he fet un moviment de la paleta */
+					sprintf(strin,"Temps: [%.2d:%.2d]. Moviments: [%d/%d].", timer.min, timer.sec, moviments, total_moves);
+					pthread_mutex_lock(&screen_control); /* tanca semafor */
+					win_escristr(strin);
+					pthread_mutex_unlock(&screen_control); /* obre semafor */ 
+				}
 				pthread_mutex_unlock(&movement_control); /* obre semafor */
 			}
 			else		/* si hi ha obstacle, canvia el sentit del moviment */

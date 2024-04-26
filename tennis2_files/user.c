@@ -5,6 +5,8 @@
 /* funcio per moure la paleta de l'usuari en funcio de la tecla premuda */
 static void	mou_paleta_usuari(int tecla)
 {
+	char	strin[100];
+
 	pthread_mutex_lock(&screen_control); /* tanca semafor */
 	if ((tecla == TEC_AVALL) && (win_quincar(ipu_pf+l_pal,ipu_pc) == ' '))
 	{
@@ -13,8 +15,14 @@ static void	mou_paleta_usuari(int tecla)
 		win_escricar(ipu_pf+l_pal-1,ipu_pc,'0',INVERS); /* impri. ultim bloc */
 		pthread_mutex_unlock(&screen_control); /* obre semafor */ 
 		pthread_mutex_lock(&movement_control); /* tanca semafor */
-		if (moviments > 0)
+		if (count_moves && moviments > 0)
+		{
 			moviments--;    /* he fet un moviment de la paleta */
+			sprintf(strin,"Temps: [%.2d:%.2d]. Moviments: [%d/%d].", timer.min, timer.sec, moviments, total_moves);
+			pthread_mutex_lock(&screen_control); /* tanca semafor */
+			win_escristr(strin);
+			pthread_mutex_unlock(&screen_control); /* obre semafor */ 
+		}
 		pthread_mutex_unlock(&movement_control); /* obre semafor */
 	}
 	else
@@ -27,8 +35,14 @@ static void	mou_paleta_usuari(int tecla)
 		win_escricar(ipu_pf,ipu_pc,'0',INVERS);	    /* imprimeix primer bloc */
 		pthread_mutex_unlock(&screen_control); /* obre semafor */ 
 		pthread_mutex_lock(&movement_control); /* tanca semafor */
-		if (moviments > 0)
+		if (count_moves && moviments > 0)
+		{
 			moviments--;    /* he fet un moviment de la paleta */
+			sprintf(strin,"Temps: [%.2d:%.2d]. Moviments: [%d/%d].", timer.min, timer.sec, moviments, total_moves);
+			pthread_mutex_lock(&screen_control); /* tanca semafor */
+			win_escristr(strin);
+			pthread_mutex_unlock(&screen_control); /* obre semafor */ 
+		}
 		pthread_mutex_unlock(&movement_control); /* obre semafor */
 	}
 	else

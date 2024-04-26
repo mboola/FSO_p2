@@ -82,9 +82,11 @@ int	n_paletes;	/* nombre total de paletes carregades des del fitxer */
 
 int retard;		/* valor del retard de moviment, en mil.lisegons */
 int moviments;		/* numero max de moviments paletes per acabar el joc */
+int	total_moves;
 
 char	creation_failed;
 
+char	count_moves;
 char	start;	//Var to initialize the execution of the threads
 char	end;	//Var to stop the executation of the threads
 char	pause_game;	//Var to pause the executation of the threads
@@ -170,7 +172,7 @@ int inicialitza_joc(void)
 {
 	int i, i_port, f_port, retwin;
 	int j;
-	char strin[69];
+	char strin[60];
 
 	retwin = win_ini(&n_fil,&n_col,'+',INVERS);   /* intenta crear taulell */
 
@@ -216,7 +218,7 @@ int inicialitza_joc(void)
 	pil_pf = ipil_pf; pil_pc = ipil_pc;	/* fixar valor real posicio pilota */
 	win_escricar(ipil_pf, ipil_pc, '.',INVERS);	/* dibuix inicial pilota */
 
-	sprintf(strin,"Temps: [%.2d:%.2d].", 0, 0);
+	sprintf(strin,"Temps: [%.2d:%.2d]. Moviments: [%d/%d].", 0, 0, moviments, total_moves);
 	win_escristr(strin);
 	return(0);
 }
@@ -360,6 +362,11 @@ int main(int n_args, const char *ll_args[])
 
 	carrega_parametres(ll_args[1]);
 	moviments=atoi(ll_args[2]);
+	total_moves = moviments;
+	if (moviments == 0)
+		count_moves = 0;
+	else
+		count_moves = 1;
 
 	if (n_args == 4)
 		retard = atoi(ll_args[3]);
@@ -378,7 +385,7 @@ int main(int n_args, const char *ll_args[])
 	start = 1;
 
 	/********** bucle principal del joc **********/
-	while ((tecla != TEC_RETURN) && (control == -1) && ((moviments > 0) || moviments == -1) && !end);
+	while ((tecla != TEC_RETURN) && (control == -1) && ((!count_moves && moviments == 0) || (moviments > 0) || moviments == -1) && !end);
 
 	end = 1;
 	end_threads(lock_data);
