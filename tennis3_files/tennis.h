@@ -17,6 +17,14 @@
 #  define MAX_PROCS 9
 # endif
 
+# ifndef N_ARGS
+#  define N_ARGS 13
+# endif
+
+# ifndef ARGS_LEN
+#  define ARGS_LEN 100
+# endif
+
 # ifndef PAL_ORD_EXE
 #  define PAL_ORD_EXE "./tennis3_ord"
 # endif
@@ -48,6 +56,24 @@ typedef struct s_lock_data
 	pthread_t	id_timer;
 	pthread_t	id_computer[MAX_PAL];
 }		t_lock_data;
+
+typedef struct s_mem
+{
+	int		moviments_mem;
+	int		*moviments_ptr;
+	int		creation_failed_mem;
+	char	*creation_failed_ptr;
+	int		start_mem;
+	char	*start_ptr;
+	int		end_mem;
+	char	*end_ptr;
+	int		pause_game_mem;
+	char	*pause_game_ptr;
+	int		control_mem;
+	int		*control_ptr;
+	int		count_moves_mem;
+	int		*count_moves_ptr;
+}		t_mem;
 
 extern int n_fil, n_col, m_por;	/* dimensions del taulell i porteries */
 extern int l_pal;			/* longitud de les paletes */

@@ -68,10 +68,7 @@ t_timer		timer;
 
 pthread_mutex_t	screen_control = PTHREAD_MUTEX_INITIALIZER;		//Lock to control the resource screen
 pthread_mutex_t	movement_control = PTHREAD_MUTEX_INITIALIZER;	//Lock to control the moviments value
-pthread_mutex_t user_pause_control = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t	timer_pause_control = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t	ball_pause_control = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t	computer_pause_control[MAX_PAL];
+pthread_mutex_t pause_control = PTHREAD_MUTEX_INITIALIZER;
 
 int ipil_pf, ipil_pc;		/* posicio de la pilota, en valor enter */
 float pil_pf, pil_pc;		/* posicio de la pilota, en valor real */
@@ -223,136 +220,65 @@ int inicialitza_joc(void)
 	return(0);
 }
 
-static void	destroy_mutex(pthread_mutex_t *mutex_to_destroy, char *value)
+static t_mem	create_shared_mem(void)
 {
-	if (*value == 0)
-		exit (2);
-	pthread_mutex_destroy(mutex_to_destroy);	// Lock destroyed
-	*value -= 1;
+	t_mem	shared_mem;
+
+	//create shared mem of moviments
+	shared_mem.moviments_mem = ini_mem(sizeof(int));
+	shared_mem.moviments_ptr = map_mem(shared_mem.moviments_mem);
+	//create shared mem of creation_failed
+	shared_mem.creation_failed_mem = ini_mem(sizeof(char));
+	shared_mem.creation_failed_ptr = map_mem(shared_mem.creation_failed_mem);
+	//create shared mem of start
+	shared_mem.start_mem = ini_mem(sizeof(char));
+	shared_mem.start_ptr = map_mem(shared_mem.start_mem);
+	//create shared mem of end
+	shared_mem.end_mem = ini_mem(sizeof(char));
+	shared_mem.end_ptr = map_mem(shared_mem.end_mem);
+	//create shared mem of pause_game
+	shared_mem.pause_game_mem = ini_mem(sizeof(char));
+	shared_mem.pause_game_ptr = map_mem(shared_mem.pause_game_mem);
+	//create shared mem of control
+	shared_mem.control_mem = ini_mem(sizeof(int));
+	shared_mem.control_ptr = map_mem(shared_mem.control_mem);
+	//create share mem of moves counted
+	shared_mem.count_moves_mem = ini_mem(sizeof(int));
+	shared_mem.count_moves_ptr = map_mem(shared_mem.count_moves_mem);
+
+	return (shared_mem);
 }
 
-static void	mutex_creation_error(char mutex_init)
+static void	init_args(char args[N_ARGS][], t_mem shared_mem)
 {
-	char	value;
-	int		i;
-
-	value = mutex_init;
-	printf("Program initialization failed.\n");
-	destroy_mutex(&screen_control, &value);		// Screen lock destroyed
-	destroy_mutex(&movement_control, &value);	// Movement lock destroyed
-	destroy_mutex(&user_pause_control, &value);	// User pause lock destroyed
-	destroy_mutex(&timer_pause_control, &value);// Timer pause lock destroyed
-	destroy_mutex(&ball_pause_control, &value);	// Ball pause lock destroyed
-	for (i = 0; i < n_paletes; i++)
-		destroy_mutex(&computer_pause_control[i], &value);	// Computer pause lock destroyed
+	sprintf(args[0],"%i", shared_mem.moviments_mem);
+	sprintf(args[1],"%i", shared_mem.creation_failed_mem);
+	sprintf(args[2],"%i", shared_mem.start_mem);
+	sprintf(args[3],"%i", shared_mem.end_mem);
+	sprintf(args[4],"%i", shared_mem.pause_game_mem);
+	sprintf(args[5],"%i", shared_mem.control_mem);
+	sprintf(args[6],"%i", shared_mem.count_moves_mem);
 }
 
-static void	thread_creation_error(char threads_init, t_lock_data *lock_data, char mutex_init)
+static void	update_args(char args[N_ARGS][], int i)
 {
-	int	i;
+	t_paleta	paleta;
 
-	creation_failed = 1;
-	if (threads_init == 0)
-		goto end;
-	pthread_join(lock_data->id_user, NULL);
-	threads_init--;
-	if (threads_init == 0)
-		goto end;
-	pthread_join(lock_data->id_ball, NULL);
-	threads_init--;
-	if (threads_init == 0)
-		goto end;
-	pthread_join(lock_data->id_timer, NULL);
-	threads_init--;
-	if (threads_init == 0)
-		goto end;
-	i = 0;
-	while (threads_init)
-	{
-		pthread_join(lock_data->id_computer[i], NULL);
-		threads_init--;
-		i++;
-	}
-	end:
-	win_fi();
-	mutex_creation_error(mutex_init);
-}
-
-static void	init_threads(t_lock_data *lock_data)
-{
-	int		i;
-	char	mutex_init;
-	char	threads_init;
-
-	mutex_init = 0;
-	threads_init = 0;
-	creation_failed = 0;
-
-	//Create locks used
-	if (pthread_mutex_init(&screen_control, NULL))		// Screen lock initialized
-		mutex_creation_error(mutex_init);
-	mutex_init++;
-	if (pthread_mutex_init(&movement_control, NULL))	// Movement lock initialized
-		mutex_creation_error(mutex_init);
-	mutex_init++;
-	if (pthread_mutex_init(&user_pause_control, NULL))
-		mutex_creation_error(mutex_init);
-	mutex_init++;
-	if (pthread_mutex_init(&timer_pause_control, NULL))
-		mutex_creation_error(mutex_init);
-	mutex_init++;
-	if (pthread_mutex_init(&ball_pause_control, NULL))
-		mutex_creation_error(mutex_init);
-	mutex_init++;
-
-	//Create threads used
-	if (pthread_create(&(lock_data->id_user), NULL, user_functionality, NULL))
-		thread_creation_error(threads_init, lock_data, mutex_init);
-	threads_init++;
-	if (pthread_create(&(lock_data->id_ball), NULL, ball_functionality, NULL))
-		thread_creation_error(threads_init, lock_data, mutex_init);
-	threads_init++;
-	if (pthread_create(&(lock_data->id_timer), NULL, timer_functionality, NULL))
-		thread_creation_error(threads_init, lock_data, mutex_init);
-	threads_init++;
-}
-
-static void	end_threads(t_lock_data lock_data)
-{
-	int	i;
-
-	pthread_join(lock_data.id_user, NULL);
-	pthread_join(lock_data.id_ball, NULL);
-	pthread_join(lock_data.id_timer, NULL);
-
-	pthread_mutex_destroy(&screen_control);		// Screen sempahore destroyed
-	pthread_mutex_destroy(&movement_control);	// movement sempahore destroyed
-	pthread_mutex_destroy(&user_pause_control);		// Pause lock initialized
-	pthread_mutex_destroy(&timer_pause_control);	// Pause lock initialized
-	pthread_mutex_destroy(&ball_pause_control);		// Pause lock initialized
-	win_fi();
-}
-
-static void	end_program(int i)
-{
-	//end other procs
-	exit(2);
-}
-
-static void	set_args(int i, char args[10][])
-{
-
+	paleta = paletes[i];
+	sprintf(args[7], "%i", paleta.ipo_pf);
+	sprintf(args[8], "%i", paleta.ipo_pc);
+	sprintf(args[9], "%f", paleta.po_pf);
+	sprintf(args[10], "%f", paleta.v_pal);
+	sprintf(args[11], "%f", paleta.pal_ret);
+	sprintf(args[12], "%c", paleta.id);
 }
 
 /* programa principal				    */
 int main(int n_args, const char *ll_args[])
 {
 	t_lock_data	lock_data;
-	pid_t		pids[MAX_PROCS];
-	int			i;
-	int			mem_shared;
-	void		*ptr_mem_shared;
-	char		args[10][100];
+	t_mem		shared_mem;
+	char		args[N_ARGS][ARGS_LEN];
 
 	if ((n_args != 3) && (n_args !=4))
 	{
@@ -375,38 +301,40 @@ int main(int n_args, const char *ll_args[])
 
 	if (inicialitza_joc() !=0)    /* intenta crear el taulell de joc */
 		exit(4);   /* aborta si hi ha algun problema amb taulell */
-	
-	start = 0;
-	end = 0;
-	pause_game = 0;
-	creation_failed = 0;
-	control = -1;
 
 	//create mem shared
-	mem_shared = ini_mem(sizeof(int) * 3 + sizeof(char) * 5); //can fail? //moviments, end, 
-	ptr_mem_shared = map_mem(mem_shared);
+	shared_mem = create_shared_mem();
 
-	init_threads(&lock_data);
+	//Variables used get a controlled execution
+	*shared_mem.creation_failed_ptr = 0;
+	*shared_mem.start_ptr = 0;
+	*shared_mem.end_ptr = 0;
+	*shared_mem.control_ptr = -1;
+	*shared_mem.pause_game_ptr = 0;
+
+	init_threads(&lock_data, &shared_mem);
+	init_args(args, shared_mem);
 	for (i = 0; i < n_paletes; i++)
 	{
 		pids[i] = fork();
 		if (pids[i] < (pid_t) 0) //error
-			end_program(i);
+			end_program(i, &lock_data, &shared_mem);
 		else if (pids[i] == (pid_t) 0)
 		{
 			//execute pal_ord3.c
-			set_args(i, args);
-			execlp(PAL_ORD_EXE, PAL_ORD, args[0], args[1], args[2]);
+			update_args(args, i);
+			execlp(PAL_ORD_EXE, PAL_ORD,
+				args[0], args[1], args[2], args[3], args[4], args[5], args[6],
+				args[7], args[8], args[9], args[10], args[11], args[12]);
 			exit(0);
 		}
 	}
-	start = 1;
-
+	*shared_mem.start_ptr = 1;
 
 	/********** bucle principal del joc **********/
 	while ((tecla != TEC_RETURN) && (control == -1) && ((!count_moves && moviments == 0) || (moviments > 0) || moviments == -1) && !end);
 
-	end = 1;
+	*shared_mem.end_ptr = 1;
 	end_threads(lock_data);
 
 	//tell procs to end somehow
