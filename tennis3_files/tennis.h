@@ -9,16 +9,22 @@
 #ifndef TENNIS_H
 # define TENNIS_H
 
-# include "winsuport.h"
+# include "winsuport2.h"
+# include "memoria.h"
+# include "missatge.h"
+# include "semafor.h"
+# include <sys/wait.h>
 # include <pthread.h>
 # include <unistd.h>
+# include <stdio.h>
+# include <stdlib.h>
 
 # ifndef MAX_PROCS
 #  define MAX_PROCS 9
 # endif
 
 # ifndef N_ARGS
-#  define N_ARGS 13
+#  define N_ARGS 18
 # endif
 
 # ifndef ARGS_LEN
@@ -32,6 +38,19 @@
 # ifndef PAL_ORD
 #  define PAL_ORD "tennis3_ord"
 # endif
+
+#define MIN_FIL 7		/* definir limits de variables globals */
+#define MAX_FIL 25
+#define MIN_COL 10
+#define MAX_COL 80
+#define MIN_PAL 3
+#define MIN_VEL -1.0
+#define MAX_VEL 1.0
+#define MIN_RET 0.0
+#define MAX_RET 5.0
+#define MAX_PAL 9
+
+#define TEC_ESPAI   ' '  	/* tecla de barra espaiadora */
 
 typedef struct s_paleta
 {
@@ -54,7 +73,6 @@ typedef struct s_lock_data
 	pthread_t 	id_user;
 	pthread_t	id_ball;
 	pthread_t	id_timer;
-	pthread_t	id_computer[MAX_PAL];
 }		t_lock_data;
 
 typedef struct s_mem
@@ -73,6 +91,10 @@ typedef struct s_mem
 	int		*control_ptr;
 	int		count_moves_mem;
 	int		*count_moves_ptr;
+	int		timer_sec_mem;
+	char	*timer_sec_ptr;
+	int		timer_min_mem;
+	char	*timer_min_ptr;
 }		t_mem;
 
 extern int n_fil, n_col, m_por;	/* dimensions del taulell i porteries */
@@ -80,14 +102,12 @@ extern int l_pal;			/* longitud de les paletes */
 
 extern int ipu_pf, ipu_pc;      	/* posicio del la paleta d'usuari */
 
-extern t_paleta	paletes[MAX_PAL];	/* array de paletes */
-extern t_timer	timer;
+extern t_paleta	paletes[MAX_PROCS];	/* array de paletes */
+extern t_mem	shared_mem;
 
 extern pthread_mutex_t	screen_control;		//Lock to control the resource screen
 extern pthread_mutex_t	movement_control;	//Lock to control the moviments value
-extern pthread_mutex_t	timer_pause_control;
-extern pthread_mutex_t	ball_pause_control;
-extern pthread_mutex_t	computer_pause_control[MAX_PAL];
+extern pthread_mutex_t	pause_control;
 
 extern char	creation_failed;
 
@@ -114,5 +134,9 @@ void	*system_functionality();
 void	*user_functionality();
 void	*ball_functionality();
 void	*timer_functionality();
+
+void	init_threads(t_lock_data *lock_data, t_mem *mem);
+void	end_threads(t_lock_data lock_data);
+void	end_program(int process_created, t_lock_data *lock_data, t_mem *mem);
 
 #endif

@@ -76,15 +76,15 @@ static int	moure_pilota(void)
 
 void	*ball_functionality()
 {
-	while (!start && !creation_failed);
-	if (!creation_failed)
+	while (!(*shared_mem.start_ptr) && !(*shared_mem.creation_failed_ptr));
+	if (!(*shared_mem.creation_failed_ptr))
 	{
-		while(!end)
+		while(!(*shared_mem.end_ptr))
 		{
-			pthread_mutex_lock(&ball_pause_control);
 			control = moure_pilota();
-			pthread_mutex_unlock(&ball_pause_control);
 			win_retard(retard);
+			pthread_mutex_lock(&pause_control);
+			pthread_mutex_unlock(&pause_control);
 		}
 	}
 	pthread_exit(0);

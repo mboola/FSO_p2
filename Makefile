@@ -8,7 +8,7 @@ INCLUDE			=	-I ${LIB_DIR}
 OPTIMIZATION	=	-03
 
 ####### FILES #######
-FILES	=	${TENNIS_SRC}ball.c ${TENNIS_SRC}user.c ${TENNIS_SRC}timer.c
+FILES	=	${TENNIS_SRC}ball.c ${TENNIS_SRC}user.c ${TENNIS_SRC}timer.c ${TENNIS_SRC}error_handling.c
 
 FILES_TENNIS = ${FILES} ${TENNIS_MAIN}
 
@@ -56,11 +56,8 @@ tennis3: TENNIS_MAIN_CHILD := ${TENNIS_SRC}pal_ord3.c
 #tennis4: TENNIS_EXE := tennis0_exe
 #tennis4: TENNIS_MAIN := tennis4.c
 
-
-tennis3 tennis4: ${PROCESS_OBJECTS} ${PROCESS_HEADER} #compiles main
+tennis3 tennis4: ${PROCESS_OBJECTS} ${PROCESS_HEADER}
 	gcc ${FLAGS_EXE} ${FILES_TENNIS} ${PROCESS_OBJECTS} -o ${TENNIS_EXE} -lcurses ${INCLUDE}
-
-tennis3 tennis4: ${PROCESS_OBJECTS} ${PROCESS_HEADER} #compiles pal_ord
 	gcc ${FLAGS_EXE} ${TENNIS_MAIN_CHILD} ${PROCESS_OBJECTS} -o ${TENNIS_EXE_CHILD} -lcurses ${INCLUDE}
 
 clean:

@@ -54,7 +54,6 @@
 /*	6  ==>  no s'ha pogut crear el camp de joc (no pot iniciar CURSES)   */
 /*****************************************************************************/
 
-#include "winsuport.h"		/* incloure definicions de funcions propies */
 #include "tennis.h"
 
 /* variables globals */
@@ -63,8 +62,8 @@ int l_pal;			/* longitud de les paletes */
 
 int ipu_pf, ipu_pc;      	/* posicio del la paleta d'usuari */
 
-t_paleta	paletes[MAX_PAL];	/* paletes del programa */
-t_timer		timer;
+t_paleta	paletes[MAX_PROCS];	/* paletes del programa */
+t_mem		shared_mem;
 
 pthread_mutex_t	screen_control = PTHREAD_MUTEX_INITIALIZER;		//Lock to control the resource screen
 pthread_mutex_t	movement_control = PTHREAD_MUTEX_INITIALIZER;	//Lock to control the moviments value
@@ -78,15 +77,7 @@ float pil_ret;			/* percentatge de retard de la pilota */
 int	n_paletes;	/* nombre total de paletes carregades des del fitxer */
 
 int retard;		/* valor del retard de moviment, en mil.lisegons */
-int moviments;		/* numero max de moviments paletes per acabar el joc */
 int	total_moves;
-
-char	creation_failed;
-
-char	count_moves;
-char	start;	//Var to initialize the execution of the threads
-char	end;	//Var to stop the executation of the threads
-char	pause_game;	//Var to pause the executation of the threads
 
 int	tecla;
 int	control;
@@ -215,7 +206,7 @@ int inicialitza_joc(void)
 	pil_pf = ipil_pf; pil_pc = ipil_pc;	/* fixar valor real posicio pilota */
 	win_escricar(ipil_pf, ipil_pc, '.',INVERS);	/* dibuix inicial pilota */
 
-	sprintf(strin,"Temps: [%.2d:%.2d]. Moviments: [%d/%d].", 0, 0, moviments, total_moves);
+	sprintf(strin,"Temps: [%.2d:%.2d]. Moviments: [%d/%d].", 0, 0, *(shared_mem.moviments_ptr), total_moves);
 	win_escristr(strin);
 	return(0);
 }
@@ -245,22 +236,33 @@ static t_mem	create_shared_mem(void)
 	//create share mem of moves counted
 	shared_mem.count_moves_mem = ini_mem(sizeof(int));
 	shared_mem.count_moves_ptr = map_mem(shared_mem.count_moves_mem);
+	//
+	shared_mem.timer_sec_mem = ini_mem(sizeof(char));
+	shared_mem.timer_sec_ptr = map_mem(shared_mem.timer_sec_mem);
+	//
+	shared_mem.timer_min_mem = ini_mem(sizeof(int));
+	shared_mem.timer_min_ptr = map_mem(shared_mem.timer_min_mem);
 
 	return (shared_mem);
 }
 
-static void	init_args(char args[N_ARGS][], t_mem shared_mem)
+static void	init_args(char args[N_ARGS][ARGS_LEN], t_mem shared_mem)
 {
-	sprintf(args[0],"%i", shared_mem.moviments_mem);
-	sprintf(args[1],"%i", shared_mem.creation_failed_mem);
-	sprintf(args[2],"%i", shared_mem.start_mem);
-	sprintf(args[3],"%i", shared_mem.end_mem);
-	sprintf(args[4],"%i", shared_mem.pause_game_mem);
-	sprintf(args[5],"%i", shared_mem.control_mem);
-	sprintf(args[6],"%i", shared_mem.count_moves_mem);
+	sprintf(args[0], "%i", shared_mem.moviments_mem);
+	sprintf(args[1], "%i", shared_mem.creation_failed_mem);
+	sprintf(args[2], "%i", shared_mem.start_mem);
+	sprintf(args[3], "%i", shared_mem.end_mem);
+	sprintf(args[4], "%i", shared_mem.pause_game_mem);
+	sprintf(args[5], "%i", shared_mem.control_mem);
+	sprintf(args[6], "%i", shared_mem.count_moves_mem);
+	sprintf(args[13], "%d", retard);
+	sprintf(args[14], "%d", total_moves);
+	sprintf(args[15], "%d", l_pal);
+	sprintf(args[16], "%d", shared_mem.timer_sec_mem);
+	sprintf(args[17], "%d", shared_mem.timer_min_mem);
 }
 
-static void	update_args(char args[N_ARGS][], int i)
+static void	update_args(char args[N_ARGS][ARGS_LEN], int i)
 {
 	t_paleta	paleta;
 
@@ -277,8 +279,9 @@ static void	update_args(char args[N_ARGS][], int i)
 int main(int n_args, const char *ll_args[])
 {
 	t_lock_data	lock_data;
-	t_mem		shared_mem;
 	char		args[N_ARGS][ARGS_LEN];
+	int			i;
+	pid_t		pids[MAX_PROCS];
 
 	if ((n_args != 3) && (n_args !=4))
 	{
@@ -286,13 +289,17 @@ int main(int n_args, const char *ll_args[])
 		exit(1);
 	}
 
+	//create mem shared
+	shared_mem = create_shared_mem();
+
 	carrega_parametres(ll_args[1]);
-	moviments=atoi(ll_args[2]);
-	total_moves = moviments;
-	if (moviments == 0)
-		count_moves = 0;
+	*shared_mem.moviments_ptr = atoi(ll_args[2]);
+	total_moves = *shared_mem.moviments_ptr;
+
+	if (*shared_mem.moviments_ptr == 0)
+		*shared_mem.count_moves_ptr = 0;
 	else
-		count_moves = 1;
+		*shared_mem.count_moves_ptr = 1;
 
 	if (n_args == 4)
 		retard = atoi(ll_args[3]);
@@ -301,9 +308,6 @@ int main(int n_args, const char *ll_args[])
 
 	if (inicialitza_joc() !=0)    /* intenta crear el taulell de joc */
 		exit(4);   /* aborta si hi ha algun problema amb taulell */
-
-	//create mem shared
-	shared_mem = create_shared_mem();
 
 	//Variables used get a controlled execution
 	*shared_mem.creation_failed_ptr = 0;
@@ -325,26 +329,30 @@ int main(int n_args, const char *ll_args[])
 			update_args(args, i);
 			execlp(PAL_ORD_EXE, PAL_ORD,
 				args[0], args[1], args[2], args[3], args[4], args[5], args[6],
-				args[7], args[8], args[9], args[10], args[11], args[12]);
+				args[7], args[8], args[9], args[10], args[11], args[12],
+				args[13], args[14], args[15],
+				args[16], args[17], NULL);
 			exit(0);
 		}
 	}
 	*shared_mem.start_ptr = 1;
 
 	/********** bucle principal del joc **********/
-	while ((tecla != TEC_RETURN) && (control == -1) && ((!count_moves && moviments == 0) || (moviments > 0) || moviments == -1) && !end);
+	while ((tecla != TEC_RETURN) && (control == -1) &&
+		((!*shared_mem.count_moves_ptr && *shared_mem.moviments_ptr == 0) || (*shared_mem.moviments_ptr > 0) || *shared_mem.moviments_ptr == -1)
+		&& !*shared_mem.end_ptr);
 
 	*shared_mem.end_ptr = 1;
 	end_threads(lock_data);
 
 	//tell procs to end somehow
 	for (i = 0; i < n_paletes; i++)
-		wait();
+		wait(NULL);
 
-	if (control == 0 || moviments == 0)
+	if (control == 0 || *shared_mem.moviments_ptr == 0)
 		printf("Ha guanyat l'ordinador!\n");
 	else
 		printf("Ha guanyat l'usuari!\n");
-	printf("El temps total de joc ha estat de: [%.2d:%.2d].\n", timer.min, timer.sec);
+	printf("El temps total de joc ha estat de: [%.2d:%.2d].\n", *shared_mem.timer_min_ptr, *shared_mem.timer_sec_ptr);
 	return(0);
 }

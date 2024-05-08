@@ -6,18 +6,17 @@
 /*														   */
 /***********************************************************/
 
-#include "winsuport2.h"		/* incloure definicions de funcions propies */
 #include "tennis.h"
 
 static void	remove_mem(t_mem *mem)
 {
-	elim_mem(shared_mem->moviments_mem);
-	elim_mem(shared_mem->creation_failed_mem);
-	elim_mem(shared_mem->start_mem);
-	elim_mem(shared_mem->end_mem);
-	elim_mem(shared_mem->pause_game_mem);
-	elim_mem(shared_mem->control_mem);
-	elim_mem(shared_mem->count_moves_mem);
+	elim_mem(mem->moviments_mem);
+	elim_mem(mem->creation_failed_mem);
+	elim_mem(mem->start_mem);
+	elim_mem(mem->end_mem);
+	elim_mem(mem->pause_game_mem);
+	elim_mem(mem->control_mem);
+	elim_mem(mem->count_moves_mem);
 	exit (2);
 }
 
@@ -52,7 +51,7 @@ static void	thread_creation_error(char threads_init, char mutex_init, t_lock_dat
 	if (threads_init == 0)
 		goto end;
 	pthread_join(lock_data->id_timer, NULL);
-
+	end:
 	win_fi();
 	mutex_creation_error(mutex_init, mem);
 }
@@ -67,13 +66,13 @@ void	init_threads(t_lock_data *lock_data, t_mem *mem)
 
 	//Create locks used
 	if (pthread_mutex_init(&screen_control, NULL))		// Screen lock initialized
-		mutex_creation_error(mutex_init);
+		mutex_creation_error(mutex_init, mem);
 	mutex_init++;
 	if (pthread_mutex_init(&movement_control, NULL))	// Movement lock initialized
-		mutex_creation_error(mutex_init);
+		mutex_creation_error(mutex_init, mem);
 	mutex_init++;
 	if (pthread_mutex_init(&pause_control, NULL))		// Pause lock initialized
-		mutex_creation_error(mutex_init);
+		mutex_creation_error(mutex_init, mem);
 
 	//Create threads used
 	if (pthread_create(&(lock_data->id_user), NULL, user_functionality, NULL))
@@ -104,8 +103,8 @@ void	end_program(int process_created, t_lock_data *lock_data, t_mem *mem)
 
 	while (process_created > 0)
 	{
-		wait();
+		wait(NULL);
 		process_created--;
 	}
-	thread_creation_error(2, 2, lock_data, mem->creation_failed_ptr);
+	thread_creation_error(2, 2, lock_data, mem);
 }

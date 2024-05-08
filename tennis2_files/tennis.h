@@ -52,6 +52,7 @@ extern t_timer	timer;
 extern pthread_mutex_t	screen_control;		//Lock to control the resource screen
 extern pthread_mutex_t	movement_control;	//Lock to control the moviments value
 extern pthread_mutex_t	timer_pause_control;
+extern pthread_mutex_t	user_pause_control;
 extern pthread_mutex_t	ball_pause_control;
 extern pthread_mutex_t	computer_pause_control[MAX_PAL];
 
@@ -80,5 +81,8 @@ void	*system_functionality();
 void	*user_functionality();
 void	*ball_functionality();
 void	*timer_functionality();
+
+void	init_threads(t_lock_data *lock_data);
+void	end_threads(t_lock_data lock_data);
 
 #endif
