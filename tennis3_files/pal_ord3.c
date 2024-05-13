@@ -103,6 +103,7 @@ static t_mem	convert_mem(char **argv)
 	//
 	mem.timer_min_mem = atoi(argv[17]);
 	mem.timer_min_ptr = map_mem(mem.timer_min_mem);
+
 	return (mem);
 }
 
@@ -127,6 +128,15 @@ int	main(int argc, char **argv)
 	int			retard;
 
 	(void)argc;
+	
+	//char pid_str[20];
+    //sprintf(pid_str, "%d", getpid());
+	int temp = atoi(argv[18]);
+	void* map = map_mem(temp);
+	int fils = atoi(argv[19]);
+	int cols = atoi(argv[20]);
+	win_set(map, fils, cols);
+
 	shared_mem = convert_mem(argv);
 	paleta = convert_paleta(argv);
 	retard = atoi(argv[13]);

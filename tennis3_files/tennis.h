@@ -24,7 +24,7 @@
 # endif
 
 # ifndef N_ARGS
-#  define N_ARGS 18
+#  define N_ARGS 21 /*18_DEBUG*/
 # endif
 
 # ifndef ARGS_LEN
@@ -95,8 +95,11 @@ typedef struct s_mem
 	char	*timer_sec_ptr;
 	int		timer_min_mem;
 	char	*timer_min_ptr;
+	int     game_map;
+	char    *game_map_ptr;
 }		t_mem;
 
+/*DEBUG*/ extern int p_map; /*Dir memoria taulell*/
 extern int n_fil, n_col, m_por;	/* dimensions del taulell i porteries */
 extern int l_pal;			/* longitud de les paletes */
 

@@ -57,6 +57,7 @@
 #include "tennis.h"
 
 /* variables globals */
+int p_map; /*Punter del taulell de joc*/
 int n_fil, n_col, m_por;	/* dimensions del taulell i porteries */
 int l_pal;			/* longitud de les paletes */
 
@@ -80,7 +81,7 @@ int retard;		/* valor del retard de moviment, en mil.lisegons */
 int	total_moves;
 
 int	tecla;
-int	control;
+int	control = -1; /* suposem que al primer instant la pilota estara dins del camp */
 
 /* funcio per realitzar la carrega dels parametres de joc emmagatzemats */
 /* dins un fitxer de text, el nom del qual es passa per referencia en   */
@@ -181,6 +182,9 @@ int inicialitza_joc(void)
 		return(retwin);
 	}
 
+	p_map = ini_mem(retwin);  /* si pot crear l'entorn guardem l'id de la zona i la seleccionem */
+	win_set(map_mem(p_map), n_fil, n_col);
+
 	i_port = n_fil/2 - m_por/2;	    /* crea els forats de la porteria */
 	if (n_fil%2 == 0) i_port--;
 	if (i_port == 0) i_port=1;
@@ -248,6 +252,7 @@ static t_mem	create_shared_mem(void)
 
 static void	init_args(char args[N_ARGS][ARGS_LEN], t_mem shared_mem)
 {
+	//TODO: Should we put shared_mem in a ini_mem shared mem space and only pass the id as parameter? (More secure?)
 	sprintf(args[0], "%i", shared_mem.moviments_mem);
 	sprintf(args[1], "%i", shared_mem.creation_failed_mem);
 	sprintf(args[2], "%i", shared_mem.start_mem);
@@ -260,6 +265,9 @@ static void	init_args(char args[N_ARGS][ARGS_LEN], t_mem shared_mem)
 	sprintf(args[15], "%d", l_pal);
 	sprintf(args[16], "%d", shared_mem.timer_sec_mem);
 	sprintf(args[17], "%d", shared_mem.timer_min_mem);
+	sprintf(args[18], "%d", shared_mem.game_map);
+	sprintf(args[19], "%d", n_fil);
+	sprintf(args[20], "%d", n_col);
 }
 
 static void	update_args(char args[N_ARGS][ARGS_LEN], int i)
@@ -308,6 +316,10 @@ int main(int n_args, const char *ll_args[])
 
 	if (inicialitza_joc() !=0)    /* intenta crear el taulell de joc */
 		exit(4);   /* aborta si hi ha algun problema amb taulell */
+	
+	//Update shared_mem's game map ptr
+	shared_mem.game_map = p_map;
+	shared_mem.game_map_ptr = map_mem(p_map);
 
 	//Variables used get a controlled execution
 	*shared_mem.creation_failed_ptr = 0;
@@ -316,7 +328,7 @@ int main(int n_args, const char *ll_args[])
 	*shared_mem.control_ptr = -1;
 	*shared_mem.pause_game_ptr = 0;
 
-	init_threads(&lock_data, &shared_mem);
+	init_threads(&lock_data, &shared_mem); //TODO: Should we pass the game_map id as a parameter instead of a global to threads?
 	init_args(args, shared_mem);
 	for (i = 0; i < n_paletes; i++)
 	{
@@ -327,20 +339,29 @@ int main(int n_args, const char *ll_args[])
 		{
 			//execute pal_ord3.c
 			update_args(args, i);
-			execlp(PAL_ORD_EXE, PAL_ORD,
+			execlp(PAL_ORD_EXE,/* PAL_ORD,DEBUG*/
 				args[0], args[1], args[2], args[3], args[4], args[5], args[6],
 				args[7], args[8], args[9], args[10], args[11], args[12],
 				args[13], args[14], args[15],
-				args[16], args[17], NULL);
+				args[16], args[17], args[18], args[19], args[20], NULL);
 			exit(0);
 		}
 	}
 	*shared_mem.start_ptr = 1;
+	/*DEBUG*/FILE *file = fopen("logfile.txt", "w");
+	/*DEBUG*/long cont = 0;
 
 	/********** bucle principal del joc **********/
-	while ((tecla != TEC_RETURN) && (control == -1) &&
-		((!*shared_mem.count_moves_ptr && *shared_mem.moviments_ptr == 0) || (*shared_mem.moviments_ptr > 0) || *shared_mem.moviments_ptr == -1)
-		&& !*shared_mem.end_ptr);
+	/*DEBUG*/fprintf(file, "Should we game? %d %d(%d) %d %d\n", (tecla != TEC_RETURN), (control == -1), control, ((!*shared_mem.count_moves_ptr && *shared_mem.moviments_ptr == 0) || (*shared_mem.moviments_ptr > 0) || *shared_mem.moviments_ptr == -1), !*shared_mem.end_ptr);
+	while ((tecla != TEC_RETURN) &&
+			(control == -1) &&
+			((!*shared_mem.count_moves_ptr && *shared_mem.moviments_ptr == 0) || (*shared_mem.moviments_ptr > 0) || *shared_mem.moviments_ptr == -1) &&
+			!*shared_mem.end_ptr)
+			{win_update(); win_retard(100);}
+	/*DEBUG*/fprintf(file, "Last known ball pos: (%f,%f) [(%d,%d)] || User pos: (%d,%d)\n", pil_pf, pil_pc, ipil_pf, ipil_pc, ipu_pf, ipu_pc);
+	/*DEBUG*/fprintf(file, "(%ld) Should we game? %d %d %d %d\n", cont, (tecla != TEC_RETURN), (control == -1), ((!*shared_mem.count_moves_ptr && *shared_mem.moviments_ptr == 0) || (*shared_mem.moviments_ptr > 0) || *shared_mem.moviments_ptr == -1), !*shared_mem.end_ptr);
+	/*DEBUG*/fprintf(file, "Main process killed game execution.\n");
+	/*DEBUG*/fclose(file);
 
 	*shared_mem.end_ptr = 1;
 	end_threads(lock_data);
@@ -349,10 +370,15 @@ int main(int n_args, const char *ll_args[])
 	for (i = 0; i < n_paletes; i++)
 		wait(NULL);
 
+	//close game's window
+	win_fi();
+
+	//check who's the winner
 	if (control == 0 || *shared_mem.moviments_ptr == 0)
 		printf("Ha guanyat l'ordinador!\n");
 	else
 		printf("Ha guanyat l'usuari!\n");
 	printf("El temps total de joc ha estat de: [%.2d:%.2d].\n", *shared_mem.timer_min_ptr, *shared_mem.timer_sec_ptr);
+
 	return(0);
 }

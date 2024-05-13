@@ -76,6 +76,7 @@ static int	moure_pilota(void)
 
 void	*ball_functionality()
 {
+	win_set(map_mem(p_map), n_fil, n_col);
 	while (!(*shared_mem.start_ptr) && !(*shared_mem.creation_failed_ptr));
 	if (!(*shared_mem.creation_failed_ptr))
 	{
