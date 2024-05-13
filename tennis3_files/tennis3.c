@@ -373,7 +373,6 @@ int main(int n_args, const char *ll_args[])
 		signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
 	}
 
-	fprintf(stderr, "Ended.\n");
 	*shared_mem.end_ptr = 1;
 
 	//tell procs to end somehow
@@ -384,12 +383,12 @@ int main(int n_args, const char *ll_args[])
 	win_fi();
 	elim_sem(screen_id_sem);
 	elim_sem(move_id_sem);
-	remove_mem(&shared_mem);
 
 	if (*shared_mem.control_ptr == 0 || *shared_mem.moviments_ptr == 0)
 		printf("Ha guanyat l'ordinador!\n");
 	else
 		printf("Ha guanyat l'usuari!\n");
 	printf("El temps total de joc ha estat de: [%.2d:%.2d].\n", *shared_mem.timer_min_ptr, *shared_mem.timer_sec_ptr);
+	remove_mem(&shared_mem);
 	return(0);
 }
