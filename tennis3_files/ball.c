@@ -21,9 +21,9 @@ static int	moure_pilota(void)
 	{		/* si posicio hipotetica no coincideix amb la pos. actual */
 		if (f_h != ipil_pf)		/* provar rebot vertical */
 		{
-			pthread_mutex_lock(&screen_control); /* tanca semafor */
+			waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
 			rv = win_quincar(f_h,ipil_pc);	/* veure si hi ha algun obstacle */
-			pthread_mutex_unlock(&screen_control); /* obre semafor */
+			signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
 			if (rv != ' ')			/* si no hi ha res */
 			{
 				pil_vf = -pil_vf;		/* canvia velocitat vertical */
@@ -32,9 +32,9 @@ static int	moure_pilota(void)
 		}
 		if (c_h != ipil_pc)		/* provar rebot horitzontal */
 		{
-			pthread_mutex_lock(&screen_control); /* tanca semafor */
+			waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
 			rh = win_quincar(ipil_pf,c_h);	/* veure si hi ha algun obstacle */
-			pthread_mutex_unlock(&screen_control); /* obre semafor */
+			signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
 			if (rh != ' ')			/* si no hi ha res */
 			{
 				pil_vc = -pil_vc;		/* canvia velocitat horitzontal */
@@ -43,9 +43,9 @@ static int	moure_pilota(void)
 		}
 		if ((f_h != ipil_pf) && (c_h != ipil_pc))	/* provar rebot diagonal */
 		{
-			pthread_mutex_lock(&screen_control); /* tanca semafor */
+			waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
 			rd = win_quincar(f_h,c_h);
-			pthread_mutex_unlock(&screen_control); /* obre semafor */
+			signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
 			if (rd != ' ')				/* si no hi ha obstacle */
 			{
 				pil_vf = -pil_vf; pil_vc = -pil_vc;	/* canvia velocitats */
@@ -53,7 +53,7 @@ static int	moure_pilota(void)
 				c_h = pil_pc+pil_vc;		/* actualitza posicio entera */
 			}
 		}
-		pthread_mutex_lock(&screen_control); /* tanca semafor */
+		waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
 		if (win_quincar(f_h,c_h) == ' ')	/* verificar posicio definitiva */
 		{						/* si no hi ha obstacle */
 			win_escricar(ipil_pf,ipil_pc,' ',NO_INV);	/* esborra pilota */
@@ -64,7 +64,7 @@ static int	moure_pilota(void)
 			else
 				result = ipil_pc;	/* codi de finalitzacio de partida */
 		}
-		pthread_mutex_unlock(&screen_control); /* obre semafor */
+		signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
 	}
 	else
 	{
@@ -83,8 +83,8 @@ void	*ball_functionality()
 		{
 			control = moure_pilota();
 			win_retard(retard);
-			pthread_mutex_lock(&pause_control);
-			pthread_mutex_unlock(&pause_control);
+			//pthread_mutex_lock(&pause_control);
+			//pthread_mutex_unlock(&pause_control);
 		}
 	}
 	pthread_exit(0);

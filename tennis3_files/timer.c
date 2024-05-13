@@ -21,9 +21,9 @@ void	*timer_functionality()
 				*shared_mem.timer_sec_ptr = 0;
 			}
 			sprintf(strin,"Temps: [%.2d:%.2d]. Moviments: [%d/%d].", *shared_mem.timer_min_ptr, *shared_mem.timer_sec_ptr, *(shared_mem.moviments_ptr), total_moves);
-			//pthread_mutex_lock(&screen_control); /* tanca semafor */
+			waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
 			win_escristr(strin);
-			//pthread_mutex_unlock(&screen_control); /* obre semafor */
+			signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
 			//pthread_mutex_lock(&pause_control);
 			//pthread_mutex_unlock(&pause_control);
 		}

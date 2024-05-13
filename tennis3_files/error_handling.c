@@ -8,7 +8,7 @@
 
 #include "tennis.h"
 
-static void	remove_mem(t_mem *mem)
+void	remove_mem(t_mem *mem)
 {
 	elim_mem(mem->moviments_mem);
 	elim_mem(mem->creation_failed_mem);
@@ -17,6 +17,9 @@ static void	remove_mem(t_mem *mem)
 	elim_mem(mem->pause_game_mem);
 	elim_mem(mem->control_mem);
 	elim_mem(mem->count_moves_mem);
+	elim_mem(mem->timer_sec_mem);
+	elim_mem(mem->timer_min_mem);
+	elim_mem(mem->camp_mem);
 	exit (2);
 }
 
@@ -94,7 +97,6 @@ void	end_threads(t_lock_data lock_data)
 	pthread_mutex_destroy(&screen_control);		// Screen sempahore destroyed
 	pthread_mutex_destroy(&movement_control);	// movement sempahore destroyed
 	pthread_mutex_destroy(&pause_control);		// pause semaphore destroyed
-	win_fi();
 }
 
 void	end_program(int process_created, t_lock_data *lock_data, t_mem *mem)

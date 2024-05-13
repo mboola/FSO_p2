@@ -14,7 +14,7 @@ FILES_TENNIS = ${FILES} ${TENNIS_MAIN}
 
 HEADER	=	${TENNIS_SRC}tennis.h
 
-EXECS	=	tennis0 tennis1 tennis2 tennis3 #tennis4
+EXECS	=	tennis0 tennis1 tennis2 tennis3 tennis3_ord #tennis4 
 
 THREAD_HEADER	=	${LIB_DIR}winsuport.h
 THREAD_FILES	=	${LIB_DIR}winsuport.c

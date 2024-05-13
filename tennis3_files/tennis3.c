@@ -1,3 +1,4 @@
+
 /*****************************************************************************/
 /*									     */
 /*				     Tennis0.c				     */
@@ -64,6 +65,9 @@ int ipu_pf, ipu_pc;      	/* posicio del la paleta d'usuari */
 
 t_paleta	paletes[MAX_PROCS];	/* paletes del programa */
 t_mem		shared_mem;
+
+int			screen_id_sem;
+int			move_id_sem;
 
 pthread_mutex_t	screen_control = PTHREAD_MUTEX_INITIALIZER;		//Lock to control the resource screen
 pthread_mutex_t	movement_control = PTHREAD_MUTEX_INITIALIZER;	//Lock to control the moviments value
@@ -168,8 +172,10 @@ int inicialitza_joc(void)
 	f_port = i_port + m_por -1;
 	for (i = i_port; i <= f_port; i++)
 	{
+		waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
 		win_escricar(i,0,' ',NO_INV);
 		win_escricar(i,n_col-1,' ',NO_INV);
+		signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
 	}
 
 
@@ -177,18 +183,22 @@ int inicialitza_joc(void)
 	if (ipu_pf+l_pal >= n_fil-3) ipu_pf = 1;
 	for (i=0; i< l_pal; i++)	    /* dibuixar paleta inicialment */
 	{
+		waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
 		win_escricar(ipu_pf +i, ipu_pc, '0',INVERS);
 		for (j = 0; j < n_paletes; j++)
 			win_escricar(paletes[j].ipo_pf + i, paletes[j].ipo_pc, paletes[j].id, INVERS);
+		signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
 	}
 	for (j = 0; j < n_paletes; j++)	/* fixar valor real paleta ordinador */
 		paletes[j].po_pf = paletes[j].ipo_pf;
 
 	pil_pf = ipil_pf; pil_pc = ipil_pc;	/* fixar valor real posicio pilota */
+	waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
 	win_escricar(ipil_pf, ipil_pc, '.',INVERS);	/* dibuix inicial pilota */
 
 	sprintf(strin,"Temps: [%.2d:%.2d]. Moviments: [%d/%d].", 0, 0, *(shared_mem.moviments_ptr), total_moves);
 	win_escristr(strin);
+	signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
 	return(0);
 }
 
@@ -226,11 +236,10 @@ static t_mem	create_shared_mem(int mida_camp)
 
 	shared_mem.camp_mem = ini_mem(mida_camp);
 	shared_mem.camp_ptr = map_mem(shared_mem.camp_mem);
-
 	return (shared_mem);
 }
 
-static void	init_args(char args[N_ARGS][ARGS_LEN], t_mem shared_mem)
+static void	init_args(char args[N_ARGS][ARGS_LEN], t_mem shared_mem, int screen_id_mem, int move_id_mem)
 {
 	sprintf(args[0], "%i", shared_mem.moviments_mem);
 	sprintf(args[1], "%i", shared_mem.creation_failed_mem);
@@ -247,6 +256,8 @@ static void	init_args(char args[N_ARGS][ARGS_LEN], t_mem shared_mem)
 	sprintf(args[12], "%d", l_pal);
 	sprintf(args[13], "%d", n_fil);
 	sprintf(args[14], "%d", n_col);
+	sprintf(args[21], "%d", screen_id_mem);
+	sprintf(args[22], "%d", move_id_mem);
 }
 
 static void	update_args(char args[N_ARGS][ARGS_LEN], int i)
@@ -259,7 +270,7 @@ static void	update_args(char args[N_ARGS][ARGS_LEN], int i)
 	sprintf(args[17], "%f", paleta.po_pf);
 	sprintf(args[18], "%f", paleta.v_pal);
 	sprintf(args[19], "%f", paleta.pal_ret);
-	sprintf(args[20], "%c", paleta.id);
+	sprintf(args[20], "%d", paleta.id);
 }
 
 /* programa principal				    */
@@ -295,6 +306,9 @@ int main(int n_args, const char *ll_args[])
 	//create mem shared
 	shared_mem = create_shared_mem(mida_camp);
 
+	screen_id_sem = ini_sem(1);
+	move_id_sem = ini_sem(1);
+
 	*shared_mem.moviments_ptr = atoi(ll_args[2]);
 	total_moves = *shared_mem.moviments_ptr;
 
@@ -308,6 +322,8 @@ int main(int n_args, const char *ll_args[])
 	else
 		retard = 100;
 
+	win_set(shared_mem.camp_ptr, n_fil, n_col);
+
 	if (inicialitza_joc() !=0)    /* intenta crear el taulell de joc */
 		exit(4);   /* aborta si hi ha algun problema amb taulell */
 
@@ -318,10 +334,8 @@ int main(int n_args, const char *ll_args[])
 	*shared_mem.control_ptr = -1;
 	*shared_mem.pause_game_ptr = 0;
 
-	win_set(shared_mem.camp_ptr, n_fil, n_col);
-
 	init_threads(&lock_data, &shared_mem);
-	init_args(args, shared_mem);
+	init_args(args, shared_mem, screen_id_sem, move_id_sem);
 	for (i = 0; i < n_paletes; i++)
 	{
 		pids[i] = fork();
@@ -331,35 +345,45 @@ int main(int n_args, const char *ll_args[])
 		{
 			//execute pal_ord3.c
 			update_args(args, i);
-			fprintf(stderr, "Args main: [%s].\n", args[0]);
+			//fprintf(stderr, "Args main: [%s].\n", args[0]);
 			execlp(PAL_ORD_EXE, PAL_ORD,
 				args[0], args[1], args[2], args[3], args[4], args[5], args[6],	//mem
 				args[7], args[8],	//timer
 				args[9],	//camp
 				args[10], args[11], args[12], args[13], args[14],	//globals
 				args[15], args[16], args[17], args[18], args[19], args[20],	//paleta
+				args[21], args[22],	//semaphore
 				NULL);
 			exit(0);
 		}
 	}
-	fprintf(stderr, "All procs created.\n");
+	//fprintf(stderr, "All procs created.\n");
 	*shared_mem.start_ptr = 1;
 
 	/********** bucle principal del joc **********/
 	while ((tecla != TEC_RETURN) && (*shared_mem.control_ptr == -1) &&
 		((!*shared_mem.count_moves_ptr && *shared_mem.moviments_ptr == 0) || (*shared_mem.moviments_ptr > 0) || *shared_mem.moviments_ptr == -1)
 		&& !*shared_mem.end_ptr)
+	{
+		waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
 		win_update();			/* actualitza visualitzacio CURSES */
+		signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
+	}
 
 	fprintf(stderr, "Ended.\n");
 	*shared_mem.end_ptr = 1;
-	end_threads(lock_data);
 
 	//tell procs to end somehow
 	for (i = 0; i < n_paletes; i++)
 		wait(NULL);
+	
+	end_threads(lock_data);
+	win_fi();
+	elim_sem(screen_id_sem);
+	elim_sem(move_id_sem);
+	remove_mem(&shared_mem);
 
-	if (control == 0 || *shared_mem.moviments_ptr == 0)
+	if (*shared_mem.control_ptr == 0 || *shared_mem.moviments_ptr == 0)
 		printf("Ha guanyat l'ordinador!\n");
 	else
 		printf("Ha guanyat l'usuari!\n");

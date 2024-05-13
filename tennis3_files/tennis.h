@@ -24,11 +24,11 @@
 # endif
 
 # ifndef N_ARGS
-#  define N_ARGS 18
+#  define N_ARGS 23
 # endif
 
 # ifndef ARGS_LEN
-#  define ARGS_LEN 100
+#  define ARGS_LEN 400
 # endif
 
 # ifndef PAL_ORD_EXE
@@ -107,6 +107,9 @@ extern int ipu_pf, ipu_pc;      	/* posicio del la paleta d'usuari */
 extern t_paleta	paletes[MAX_PROCS];	/* array de paletes */
 extern t_mem	shared_mem;
 
+extern int		screen_id_sem;
+extern int		move_id_sem;
+
 extern pthread_mutex_t	screen_control;		//Lock to control the resource screen
 extern pthread_mutex_t	movement_control;	//Lock to control the moviments value
 extern pthread_mutex_t	pause_control;
@@ -140,5 +143,6 @@ void	*timer_functionality();
 void	init_threads(t_lock_data *lock_data, t_mem *mem);
 void	end_threads(t_lock_data lock_data);
 void	end_program(int process_created, t_lock_data *lock_data, t_mem *mem);
+void	remove_mem(t_mem *mem);
 
 #endif
