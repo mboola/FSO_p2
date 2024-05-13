@@ -95,6 +95,8 @@ typedef struct s_mem
 	char	*timer_sec_ptr;
 	int		timer_min_mem;
 	char	*timer_min_ptr;
+	int		camp_mem;
+	void	*camp_ptr;
 }		t_mem;
 
 extern int n_fil, n_col, m_por;	/* dimensions del taulell i porteries */

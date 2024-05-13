@@ -158,28 +158,9 @@ void carrega_parametres(const char *nom_fit)
 /* funcio per inicialitar les variables i visualitzar l'estat inicial del joc */
 int inicialitza_joc(void)
 {
-	int i, i_port, f_port, retwin;
+	int i, i_port, f_port;
 	int j;
 	char strin[60];
-
-	retwin = win_ini(&n_fil,&n_col,'+',INVERS);   /* intenta crear taulell */
-
-	if (retwin < 0)       /* si no pot crear l'entorn de joc amb les curses */
-	{
-		fprintf(stderr,"Error en la creacio del taulell de joc:\t");
-		switch (retwin)
-		{
-			case -1: fprintf(stderr,"camp de joc ja creat!\n");
-				break;
-			case -2: fprintf(stderr,"no s'ha pogut inicialitzar l'entorn de curses!\n");
-				break;
-			case -3: fprintf(stderr,"les mides del camp demanades son massa grans!\n");
-				break;
-			case -4: fprintf(stderr,"no s'ha pogut crear la finestra!\n");
-				break;
-		}
-		return(retwin);
-	}
 
 	i_port = n_fil/2 - m_por/2;	    /* crea els forats de la porteria */
 	if (n_fil%2 == 0) i_port--;
@@ -211,7 +192,7 @@ int inicialitza_joc(void)
 	return(0);
 }
 
-static t_mem	create_shared_mem(void)
+static t_mem	create_shared_mem(int mida_camp)
 {
 	t_mem	shared_mem;
 
@@ -243,6 +224,9 @@ static t_mem	create_shared_mem(void)
 	shared_mem.timer_min_mem = ini_mem(sizeof(int));
 	shared_mem.timer_min_ptr = map_mem(shared_mem.timer_min_mem);
 
+	shared_mem.camp_mem = ini_mem(mida_camp);
+	shared_mem.camp_ptr = map_mem(shared_mem.camp_mem);
+
 	return (shared_mem);
 }
 
@@ -255,11 +239,14 @@ static void	init_args(char args[N_ARGS][ARGS_LEN], t_mem shared_mem)
 	sprintf(args[4], "%i", shared_mem.pause_game_mem);
 	sprintf(args[5], "%i", shared_mem.control_mem);
 	sprintf(args[6], "%i", shared_mem.count_moves_mem);
-	sprintf(args[13], "%d", retard);
-	sprintf(args[14], "%d", total_moves);
-	sprintf(args[15], "%d", l_pal);
-	sprintf(args[16], "%d", shared_mem.timer_sec_mem);
-	sprintf(args[17], "%d", shared_mem.timer_min_mem);
+	sprintf(args[7], "%d", shared_mem.timer_sec_mem);
+	sprintf(args[8], "%d", shared_mem.timer_min_mem);
+	sprintf(args[9], "%i", shared_mem.camp_mem);
+	sprintf(args[10], "%d", retard);
+	sprintf(args[11], "%d", total_moves);
+	sprintf(args[12], "%d", l_pal);
+	sprintf(args[13], "%d", n_fil);
+	sprintf(args[14], "%d", n_col);
 }
 
 static void	update_args(char args[N_ARGS][ARGS_LEN], int i)
@@ -267,12 +254,12 @@ static void	update_args(char args[N_ARGS][ARGS_LEN], int i)
 	t_paleta	paleta;
 
 	paleta = paletes[i];
-	sprintf(args[7], "%i", paleta.ipo_pf);
-	sprintf(args[8], "%i", paleta.ipo_pc);
-	sprintf(args[9], "%f", paleta.po_pf);
-	sprintf(args[10], "%f", paleta.v_pal);
-	sprintf(args[11], "%f", paleta.pal_ret);
-	sprintf(args[12], "%c", paleta.id);
+	sprintf(args[15], "%i", paleta.ipo_pf);
+	sprintf(args[16], "%i", paleta.ipo_pc);
+	sprintf(args[17], "%f", paleta.po_pf);
+	sprintf(args[18], "%f", paleta.v_pal);
+	sprintf(args[19], "%f", paleta.pal_ret);
+	sprintf(args[20], "%c", paleta.id);
 }
 
 /* programa principal				    */
@@ -282,6 +269,7 @@ int main(int n_args, const char *ll_args[])
 	char		args[N_ARGS][ARGS_LEN];
 	int			i;
 	pid_t		pids[MAX_PROCS];
+	int			mida_camp;
 
 	if ((n_args != 3) && (n_args !=4))
 	{
@@ -289,10 +277,24 @@ int main(int n_args, const char *ll_args[])
 		exit(1);
 	}
 
-	//create mem shared
-	shared_mem = create_shared_mem();
-
 	carrega_parametres(ll_args[1]);
+
+	mida_camp = win_ini(&n_fil,&n_col,'+',INVERS);
+	if (mida_camp < 0)
+	{
+		switch (mida_camp) /* si no pot crear l'entorn de joc amb les curses */
+		{
+			case -1: fprintf(stderr,"camp de joc ja creat!\n"); break;
+			case -2: fprintf(stderr,"no s'ha pogut inicialitzar l'entorn de curses!\n"); break;
+			case -3: fprintf(stderr,"les mides del camp demanades son massa grans!\n"); break;
+			case -4: fprintf(stderr,"no s'ha pogut crear la finestra!\n"); break;
+		}
+		exit(2);
+	}
+
+	//create mem shared
+	shared_mem = create_shared_mem(mida_camp);
+
 	*shared_mem.moviments_ptr = atoi(ll_args[2]);
 	total_moves = *shared_mem.moviments_ptr;
 
@@ -310,11 +312,13 @@ int main(int n_args, const char *ll_args[])
 		exit(4);   /* aborta si hi ha algun problema amb taulell */
 
 	//Variables used get a controlled execution
-	*shared_mem.creation_failed_ptr = 0;
+	*(shared_mem.creation_failed_ptr) = 0;
 	*shared_mem.start_ptr = 0;
 	*shared_mem.end_ptr = 0;
 	*shared_mem.control_ptr = -1;
 	*shared_mem.pause_game_ptr = 0;
+
+	win_set(shared_mem.camp_ptr, n_fil, n_col);
 
 	init_threads(&lock_data, &shared_mem);
 	init_args(args, shared_mem);
@@ -323,25 +327,31 @@ int main(int n_args, const char *ll_args[])
 		pids[i] = fork();
 		if (pids[i] < (pid_t) 0) //error
 			end_program(i, &lock_data, &shared_mem);
-		else if (pids[i] == (pid_t) 0)
+		else if (pids[i] == (pid_t) 0) //child
 		{
 			//execute pal_ord3.c
 			update_args(args, i);
+			fprintf(stderr, "Args main: [%s].\n", args[0]);
 			execlp(PAL_ORD_EXE, PAL_ORD,
-				args[0], args[1], args[2], args[3], args[4], args[5], args[6],
-				args[7], args[8], args[9], args[10], args[11], args[12],
-				args[13], args[14], args[15],
-				args[16], args[17], NULL);
+				args[0], args[1], args[2], args[3], args[4], args[5], args[6],	//mem
+				args[7], args[8],	//timer
+				args[9],	//camp
+				args[10], args[11], args[12], args[13], args[14],	//globals
+				args[15], args[16], args[17], args[18], args[19], args[20],	//paleta
+				NULL);
 			exit(0);
 		}
 	}
+	fprintf(stderr, "All procs created.\n");
 	*shared_mem.start_ptr = 1;
 
 	/********** bucle principal del joc **********/
-	while ((tecla != TEC_RETURN) && (control == -1) &&
+	while ((tecla != TEC_RETURN) && (*shared_mem.control_ptr == -1) &&
 		((!*shared_mem.count_moves_ptr && *shared_mem.moviments_ptr == 0) || (*shared_mem.moviments_ptr > 0) || *shared_mem.moviments_ptr == -1)
-		&& !*shared_mem.end_ptr);
+		&& !*shared_mem.end_ptr)
+		win_update();			/* actualitza visualitzacio CURSES */
 
+	fprintf(stderr, "Ended.\n");
 	*shared_mem.end_ptr = 1;
 	end_threads(lock_data);
 
