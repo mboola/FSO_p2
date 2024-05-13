@@ -70,12 +70,12 @@ void	*user_functionality()
 			{
 				if (!pause_active)
 				{
-					//pthread_mutex_lock(&pause_control);
+					waitS(pause_id_sem);//pthread_mutex_lock(&pause_control);
 					pause_active = 1;
 				}
 				else
 				{
-					//pthread_mutex_unlock(&pause_control);
+					signalS(pause_id_sem);//pthread_mutex_unlock(&pause_control);
 					pause_active = 0;
 				}
 			}

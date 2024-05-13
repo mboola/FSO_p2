@@ -81,10 +81,10 @@ void	*ball_functionality()
 	{
 		while(!(*shared_mem.end_ptr))
 		{
-			control = moure_pilota();
+			*shared_mem.control_ptr = moure_pilota();
 			win_retard(retard);
-			//pthread_mutex_lock(&pause_control);
-			//pthread_mutex_unlock(&pause_control);
+			waitS(pause_id_sem);//pthread_mutex_lock(&pause_control);
+			signalS(pause_id_sem);//pthread_mutex_unlock(&pause_control);
 		}
 	}
 	pthread_exit(0);

@@ -24,8 +24,8 @@ void	*timer_functionality()
 			waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
 			win_escristr(strin);
 			signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
-			//pthread_mutex_lock(&pause_control);
-			//pthread_mutex_unlock(&pause_control);
+			waitS(pause_id_sem);//pthread_mutex_lock(&pause_control);
+			signalS(pause_id_sem);//pthread_mutex_unlock(&pause_control);
 		}
 	}
 	pthread_exit(0);

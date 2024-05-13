@@ -7,6 +7,7 @@ int	l_pal;			/* longitud de les paletes */
 int	n_fil, n_col;
 int	screen_id_sem;
 int	move_id_sem;
+int	pause_id_sem;
 
 /* funcio per moure la paleta de l'ordinador autonomament, en funcio de la */
 /* velocitat de la paleta (variable global v_pal) */
@@ -149,6 +150,7 @@ int	main(int argc, char **argv)
 
 	screen_id_sem = atoi(argv[22]);
 	move_id_sem = atoi(argv[23]);
+	pause_id_sem = atoi(argv[24]);
 
 	//fprintf(stderr, "Proc created.\n");
 	while (!(*shared_mem.start_ptr) && !(*shared_mem.creation_failed_ptr));
@@ -159,6 +161,8 @@ int	main(int argc, char **argv)
 			//fprintf(stderr, "Loop.\n");
 			mou_paleta_ordinador(&paleta, shared_mem);
 			win_retard(retard);
+			waitS(pause_id_sem);//pthread_mutex_lock(&pause_control);
+			signalS(pause_id_sem);//pthread_mutex_unlock(&pause_control);
 		}
 	}
 	return(0);

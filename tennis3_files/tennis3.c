@@ -68,6 +68,7 @@ t_mem		shared_mem;
 
 int			screen_id_sem;
 int			move_id_sem;
+int			pause_id_sem;
 
 pthread_mutex_t	screen_control = PTHREAD_MUTEX_INITIALIZER;		//Lock to control the resource screen
 pthread_mutex_t	movement_control = PTHREAD_MUTEX_INITIALIZER;	//Lock to control the moviments value
@@ -239,7 +240,7 @@ static t_mem	create_shared_mem(int mida_camp)
 	return (shared_mem);
 }
 
-static void	init_args(char args[N_ARGS][ARGS_LEN], t_mem shared_mem, int screen_id_mem, int move_id_mem)
+static void	init_args(char args[N_ARGS][ARGS_LEN], t_mem shared_mem)
 {
 	sprintf(args[0], "%i", shared_mem.moviments_mem);
 	sprintf(args[1], "%i", shared_mem.creation_failed_mem);
@@ -256,8 +257,9 @@ static void	init_args(char args[N_ARGS][ARGS_LEN], t_mem shared_mem, int screen_
 	sprintf(args[12], "%d", l_pal);
 	sprintf(args[13], "%d", n_fil);
 	sprintf(args[14], "%d", n_col);
-	sprintf(args[21], "%d", screen_id_mem);
-	sprintf(args[22], "%d", move_id_mem);
+	sprintf(args[21], "%d", screen_id_sem);
+	sprintf(args[22], "%d", move_id_sem);
+	sprintf(args[23], "%d", pause_id_sem);
 }
 
 static void	update_args(char args[N_ARGS][ARGS_LEN], int i)
@@ -308,6 +310,7 @@ int main(int n_args, const char *ll_args[])
 
 	screen_id_sem = ini_sem(1);
 	move_id_sem = ini_sem(1);
+	pause_id_sem = ini_sem(1);
 
 	*shared_mem.moviments_ptr = atoi(ll_args[2]);
 	total_moves = *shared_mem.moviments_ptr;
@@ -335,7 +338,7 @@ int main(int n_args, const char *ll_args[])
 	*shared_mem.pause_game_ptr = 0;
 
 	init_threads(&lock_data, &shared_mem);
-	init_args(args, shared_mem, screen_id_sem, move_id_sem);
+	init_args(args, shared_mem);
 	for (i = 0; i < n_paletes; i++)
 	{
 		pids[i] = fork();
@@ -352,7 +355,7 @@ int main(int n_args, const char *ll_args[])
 				args[9],	//camp
 				args[10], args[11], args[12], args[13], args[14],	//globals
 				args[15], args[16], args[17], args[18], args[19], args[20],	//paleta
-				args[21], args[22],	//semaphore
+				args[21], args[22],	args[23], //semaphore
 				NULL);
 			exit(0);
 		}

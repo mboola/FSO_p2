@@ -24,7 +24,7 @@
 # endif
 
 # ifndef N_ARGS
-#  define N_ARGS 23
+#  define N_ARGS 24
 # endif
 
 # ifndef ARGS_LEN
@@ -109,6 +109,7 @@ extern t_mem	shared_mem;
 
 extern int		screen_id_sem;
 extern int		move_id_sem;
+extern int		pause_id_sem;
 
 extern pthread_mutex_t	screen_control;		//Lock to control the resource screen
 extern pthread_mutex_t	movement_control;	//Lock to control the moviments value
