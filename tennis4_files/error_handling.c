@@ -46,13 +46,9 @@ void	init_threads(t_lock_data *lock_data, t_mem *mem)
 
 void	end_threads(t_lock_data lock_data)
 {
-	fprintf(stderr, "Ending threads.\n");
 	pthread_join(lock_data.id_user, NULL);
-	fprintf(stderr, "User ended.\n");
 	pthread_join(lock_data.id_ball, NULL);
-	fprintf(stderr, "Ball ended.\n");
 	pthread_join(lock_data.id_timer, NULL);
-	fprintf(stderr, "Timer ended.\n");
 }
 
 void	end_program(int process_created, t_lock_data *lock_data, t_mem *mem)

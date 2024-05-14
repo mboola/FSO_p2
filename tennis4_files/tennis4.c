@@ -301,29 +301,21 @@ int main(int n_args, const char *ll_args[])
 		win_update();			/* actualitza visualitzacio CURSES */
 		signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
 	}
-	fprintf(stderr, "Ends.\n");
+
 	*shared_mem.end_ptr = 1;
 
 	for (i = 0; i < n_paletes; i++)
 		wait(NULL);
 
-	fprintf(stderr, "All procs ends.\n");
-
 	win_fi();
-
-	fprintf(stderr, "Sems get deleted.\n");
 
 	end_threads(lock_data);
 	elim_sem(screen_id_sem);
 	elim_sem(move_id_sem);
 	elim_sem(pause_id_sem);
-
-	fprintf(stderr, "All threads ends.\n");
 	
 	for (i = 0; i < n_paletes; i++)
 		elim_mis(shared_mem.mailbox_ptr[i]);
-
-	fprintf(stderr, "All mailbox get deleted.\n");
 
 	if (*shared_mem.creation_failed_ptr)
 	{

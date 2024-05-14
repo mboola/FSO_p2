@@ -86,6 +86,5 @@ void	*user_functionality()
 			}
 		}
 	}
-	fprintf(stderr, "User ends.\n");
 	pthread_exit(0);
 }

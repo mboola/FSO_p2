@@ -3,12 +3,26 @@
 
 static void	print_chars()
 {
+	int	i;
 
+	for (i = 0; i < l_pal; i++)		/* delete paleta */
+	{
+		waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
+		win_escricar(paleta.ipo_pf + i, paleta.ipo_pc, paleta.id + '0' + 1, INVERS);
+		signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
+	}
 }
 
 static void	clear_chars()
 {
+	int	i;
 
+	for (i = 0; i < l_pal; i++)		/* delete paleta */
+	{
+		waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
+		win_escricar(paleta.ipo_pf + i, paleta.ipo_pc, ' ', INVERS);
+		signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
+	}
 }
 
 void	*mailbox_functionality()
@@ -27,6 +41,7 @@ void	*mailbox_functionality()
 				pal_touched[i] = 0;
 			has_touched = 0;
 			receiveM(shared_mem.mailbox_ptr[(paleta.id + 0)], msg);	//wait for a msg to be recived from the ball or from other paletes
+			fprintf(stderr, "Msg recieved\n");
 			if (end_proc)
 				pthread_exit(0);
 			if (msg[0] > 0 && n_col == MIN_COL + 1)	//if I have to go to the left and im at limit

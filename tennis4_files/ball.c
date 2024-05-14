@@ -13,6 +13,7 @@ static int	moure_pilota(void)
 	int f_h, c_h, result;
 	char rh,rv,rd,pd;
 	int	i;
+	char	msg[1];
 
 	f_h = pil_pf + pil_vf;		/* posicio hipotetica de la pilota */
 	c_h = pil_pc + pil_vc;
@@ -38,10 +39,14 @@ static int	moure_pilota(void)
 			signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
 			if (rh != ' ')			/* si no hi ha res */
 			{
+				if (pil_vc > 0)
+					msg[0] = 1;
+				else
+					msg[0] = -1;
 				for (i = 0; i < n_paletes; i++)
 				{
 					if (rh == '0' + i + 1)	//if char found is paleta
-						sendM(shared_mem.mailbox_ptr[i], (void *) ((intptr_t)((pil_vc > 0) + (pil_vc < 0) * -1)), sizeof(int));
+						sendM(shared_mem.mailbox_ptr[i], msg, 1);
 				}
 
 				pil_vc = -pil_vc;		/* canvia velocitat horitzontal */
