@@ -32,11 +32,11 @@
 # endif
 
 # ifndef PAL_ORD_EXE
-#  define PAL_ORD_EXE "./tennis3_ord"
+#  define PAL_ORD_EXE "./pal_ord3"
 # endif
 
 # ifndef PAL_ORD
-#  define PAL_ORD "tennis3_ord"
+#  define PAL_ORD "pal_ord3"
 # endif
 
 #define MIN_FIL 7		/* definir limits de variables globals */

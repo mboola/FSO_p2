@@ -183,7 +183,7 @@ int inicialitza_joc(void)
 		waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
 		win_escricar(ipu_pf +i, ipu_pc, '0',INVERS);
 		for (j = 0; j < n_paletes; j++)
-			win_escricar(paletes[j].ipo_pf + i, paletes[j].ipo_pc, paletes[j].id, INVERS);
+			win_escricar(paletes[j].ipo_pf + i, paletes[j].ipo_pc, paletes[j].id + '0' + 1, INVERS);
 		signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
 	}
 	for (j = 0; j < n_paletes; j++)	/* fixar valor real paleta ordinador */
@@ -259,6 +259,7 @@ static void	init_args(char args[N_ARGS][ARGS_LEN], t_mem shared_mem)
 	sprintf(args[21], "%d", screen_id_sem);
 	sprintf(args[22], "%d", move_id_sem);
 	sprintf(args[23], "%d", pause_id_sem);
+	sprintf(args[24], "%d", shared_mem.mailbox_id);
 }
 
 static void	update_args(char args[N_ARGS][ARGS_LEN], int i)
@@ -358,6 +359,7 @@ int main(int n_args, const char *ll_args[])
 				args[10], args[11], args[12], args[13], args[14],	//globals
 				args[15], args[16], args[17], args[18], args[19], args[20],	//paleta
 				args[21], args[22],	args[23], //semaphore
+				args[24],	//mailbox
 				NULL);
 			exit(0);
 		}
@@ -383,7 +385,7 @@ int main(int n_args, const char *ll_args[])
 	win_fi();
 	elim_sem(screen_id_sem);
 	elim_sem(move_id_sem);
-	for (i = 0; i < n_paletes, i++)
+	for (i = 0; i < n_paletes; i++)
 		elim_mis(*(((int *)shared_mem.mailbox_ptr) + sizeof(int) * i));
 
 	end_threads(lock_data);

@@ -210,6 +210,8 @@ int	main(int argc, char **argv)
 	move_id_sem = atoi(argv[23]);
 	pause_id_sem = atoi(argv[24]);
 
+	//fprintf(stderr, "Starting thread.\n");
+
 	//initialize threads
 	if (pthread_create(&id_mail_thread, NULL, mailbox_functionality, NULL))
 	{
