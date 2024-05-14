@@ -39,10 +39,10 @@ static int	moure_pilota(void)
 			signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
 			if (rh != ' ')			/* si no hi ha res */
 			{
-				if (pil_vc > 0)
+				if (pil_vc > 0)	//goes to the right positive
 					msg[0] = 1;
 				else
-					msg[0] = -1;
+					msg[0] = -1;	//goes to the left negative
 				for (i = 0; i < n_paletes; i++)
 				{
 					if (rh == '0' + i + 1)	//if char found is paleta

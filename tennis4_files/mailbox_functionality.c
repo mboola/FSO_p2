@@ -20,7 +20,7 @@ static void	clear_chars()
 	for (i = 0; i < l_pal; i++)		/* delete paleta */
 	{
 		waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
-		win_escricar(paleta.ipo_pf + i, paleta.ipo_pc, ' ', INVERS);
+		win_escricar(paleta.ipo_pf + i, paleta.ipo_pc, ' ', NO_INV);
 		signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
 	}
 }
@@ -41,16 +41,15 @@ void	*mailbox_functionality()
 				pal_touched[i] = 0;
 			has_touched = 0;
 			receiveM(shared_mem.mailbox_ptr[(paleta.id + 0)], msg);	//wait for a msg to be recived from the ball or from other paletes
-			fprintf(stderr, "Msg recieved\n");
 			if (end_proc)
 				pthread_exit(0);
-			if (msg[0] > 0 && n_col == MIN_COL + 1)	//if I have to go to the left and im at limit
+			if (msg[0] > 0 && paleta.ipo_pc == MAX_COL)	// If I have to go to the right and I'm at the right limit
 			{
 				clear_chars();
 				end_proc = 1;
 				pthread_exit(0);
 			}
-			else if (msg[0] < 0 && n_col == MAX_COL) //if I have to go to the right and im at limit
+			else if (msg[0] < 0 && paleta.ipo_pc == MIN_COL + 1) // If I have to go to the left and I'm at the left limit
 			{
 				clear_chars();
 				end_proc = 1;
@@ -70,7 +69,7 @@ void	*mailbox_functionality()
 			if (!has_touched)	//if there was not a single paleta touching
 			{
 				clear_chars();
-				n_col += msg[0];	//move the paleta to one direction or the other
+				paleta.ipo_pc += msg[0];	//move the paleta to one direction or the other
 				print_chars();
 			}
 		}
