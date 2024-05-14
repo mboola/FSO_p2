@@ -22,6 +22,7 @@ void	init_args(char args[N_ARGS][ARGS_LEN], t_mem shared_mem)
 	sprintf(args[22], "%d", move_id_sem);
 	sprintf(args[23], "%d", pause_id_sem);
 	sprintf(args[24], "%d", shared_mem.mailbox_id);
+	sprintf(args[25], "%d", n_paletes);
 }
 
 void	update_args(char args[N_ARGS][ARGS_LEN], int i)

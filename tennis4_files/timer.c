@@ -28,5 +28,6 @@ void	*timer_functionality()
 			signalS(pause_id_sem);//pthread_mutex_unlock(&pause_control);
 		}
 	}
+	fprintf(stderr, "Timer ends.\n");
 	pthread_exit(0);
 }

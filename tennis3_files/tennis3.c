@@ -383,6 +383,7 @@ int main(int n_args, const char *ll_args[])
 	win_fi();
 	elim_sem(screen_id_sem);
 	elim_sem(move_id_sem);
+	elim_sem(pause_id_sem);
 
 	if (*shared_mem.control_ptr == 0 || *shared_mem.moviments_ptr == 0)
 		printf("Ha guanyat l'ordinador!\n");

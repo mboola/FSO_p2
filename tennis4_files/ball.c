@@ -41,7 +41,7 @@ static int	moure_pilota(void)
 				for (i = 0; i < n_paletes; i++)
 				{
 					if (rh == '0' + i + 1)	//if char found is paleta
-						sendM(*((int*)(shared_mem.mailbox_ptr) + i * sizeof(int)), (void *) (intptr_t)((pil_vc > 0) + (pil_vc < 0) * -1), sizeof(int));
+						sendM(shared_mem.mailbox_ptr[i], (void *) ((intptr_t)((pil_vc > 0) + (pil_vc < 0) * -1)), sizeof(int));
 				}
 
 				pil_vc = -pil_vc;		/* canvia velocitat horitzontal */
@@ -86,7 +86,7 @@ void	*ball_functionality()
 	while (!(*shared_mem.start_ptr) && !(*shared_mem.creation_failed_ptr));
 	if (!(*shared_mem.creation_failed_ptr))
 	{
-		while(!(*shared_mem.end_ptr))
+		while(!(*shared_mem.end_ptr) && *shared_mem.control_ptr == -1)
 		{
 			*shared_mem.control_ptr = moure_pilota();
 			win_retard(retard);

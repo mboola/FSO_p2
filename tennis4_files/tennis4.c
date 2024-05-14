@@ -233,7 +233,7 @@ int main(int n_args, const char *ll_args[])
 	shared_mem = create_shared_mem(mida_camp);
 
 	for (i = 0; i < n_paletes; i++)
-		((int*)shared_mem.mailbox_ptr)[i] = ini_mis();
+		shared_mem.mailbox_ptr[i] = ini_mis();
 
 	screen_id_sem = ini_sem(1);
 	move_id_sem = ini_sem(1);
@@ -266,6 +266,7 @@ int main(int n_args, const char *ll_args[])
 
 	init_threads(&lock_data, &shared_mem);
 	init_args(args, shared_mem);
+	//fprintf(stderr, "Star process:\n");
 	for (i = 0; i < n_paletes; i++)
 	{
 		pids[i] = fork();
@@ -273,7 +274,6 @@ int main(int n_args, const char *ll_args[])
 			end_program(i, &lock_data, &shared_mem);
 		else if (pids[i] == (pid_t) 0) //child
 		{
-			//execute pal_ord3.c
 			update_args(args, i);
 			//fprintf(stderr, "Args main: [%s].\n", args[0]);
 			execlp(PAL_ORD_EXE, PAL_ORD,
@@ -284,6 +284,7 @@ int main(int n_args, const char *ll_args[])
 				args[15], args[16], args[17], args[18], args[19], args[20],	//paleta
 				args[21], args[22],	args[23], //semaphore
 				args[24],	//mailbox
+				args[25],	//n_paletes
 				NULL);
 			exit(0);
 		}
@@ -300,19 +301,29 @@ int main(int n_args, const char *ll_args[])
 		win_update();			/* actualitza visualitzacio CURSES */
 		signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
 	}
-
+	fprintf(stderr, "Ends.\n");
 	*shared_mem.end_ptr = 1;
 
 	for (i = 0; i < n_paletes; i++)
 		wait(NULL);
 
+	fprintf(stderr, "All procs ends.\n");
+
 	win_fi();
+
+	fprintf(stderr, "Sems get deleted.\n");
+
+	end_threads(lock_data);
 	elim_sem(screen_id_sem);
 	elim_sem(move_id_sem);
+	elim_sem(pause_id_sem);
+
+	fprintf(stderr, "All threads ends.\n");
+	
 	for (i = 0; i < n_paletes; i++)
 		elim_mis(shared_mem.mailbox_ptr[i]);
 
-	end_threads(lock_data);
+	fprintf(stderr, "All mailbox get deleted.\n");
 
 	if (*shared_mem.creation_failed_ptr)
 	{

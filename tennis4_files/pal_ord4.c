@@ -5,6 +5,7 @@
 int	total_moves;
 int	l_pal;			/* longitud de les paletes */
 int	n_fil, n_col;
+
 int	screen_id_sem;
 int	move_id_sem;
 int	pause_id_sem;
@@ -13,6 +14,7 @@ pthread_t	id_mail_thread;
 t_mem		shared_mem;
 t_paleta	paleta;
 char		end_proc;
+int			n_paletes;
 
 /* funcio per moure la paleta de l'ordinador autonomament, en funcio de la */
 /* velocitat de la paleta (variable global v_pal) */
@@ -139,76 +141,30 @@ static t_paleta	convert_paleta(char **argv)
 	return (paleta);
 }
 
-static void	*mailbox_functionality()
+static void	convert_args(char **argv)
 {
-	char	msg[TAM_MAX_MIS];
-	char	empty[MAX_PROCS];	//maybe change to n_procs??
-	char	total_empty;
-	int		i;
-
-	while (!(*shared_mem.start_ptr) && !(*shared_mem.creation_failed_ptr));
-	if (!(*shared_mem.creation_failed_ptr))
-	{
-		while(!(*shared_mem.end_ptr))
-		{
-			for (i = 0; i < MAX_PROCS; i++)
-				empty[i] = 0;
-			total_empty = 0;
-			receiveM(shared_mem.mailbox_ptr[(paleta.id + 0)], msg);	//wait for a msg to be recived from the ball or from other paletes
-			if (end_proc)
-				pthread_exit(0);
-			if (msg[0] > 0 && n_col == MIN_COL + 1)	//if I have to go to the left and im at limit
-			{
-				//clear all chars of the paleta
-				end_proc = 1;
-				pthread_exit(0);
-			}
-			else if (msg[0] < 0 && n_col == MAX_COL) //if I have to go to the right and im at limit
-			{
-				//clear all chars of the paleta
-				end_proc = 1;
-				pthread_exit(0);
-			}
-			// check if all the chars in the direction I must move are empty
-			
-			for (i = 0; i < MAX_PROCS; i++)
-			{
-				if (empty[i] == 1)
-				{
-					total_empty = 1;
-					sendM(shared_mem.mailbox_ptr[i], (void *) msg, sizeof(int));
-				}
-			}
-			if (!total_empty)	//if there was not a single paleta touching
-			{
-				//clear all chars of the paleta
-				n_col += msg[0];	//move the paleta to one direction or the other
-				//paint all chars of the paleta
-			}
-		}
-	}
-	pthread_exit(0);
-}
-
-int	main(int argc, char **argv)
-{
-	int			retard;
-
-	end_proc = 0;
-	(void)argc;
 	shared_mem = convert_mem(argv);
-	paleta = convert_paleta(argv);
-	retard = atoi(argv[11]);
 	total_moves = atoi(argv[12]);
 	l_pal = atoi(argv[13]);
 	n_fil = atoi(argv[14]);
 	n_col = atoi(argv[15]);
-
-	win_set(shared_mem.camp_ptr, n_fil, n_col);	/* crea acces a finestra oberta pel proces pare */
-
+	paleta = convert_paleta(argv);
 	screen_id_sem = atoi(argv[22]);
 	move_id_sem = atoi(argv[23]);
 	pause_id_sem = atoi(argv[24]);
+	n_paletes = atoi(argv[26]);
+}
+
+int	main(int argc, char **argv)
+{
+	int	retard;
+
+	end_proc = 0;
+	(void)argc;
+	retard = atoi(argv[11]);
+	convert_args(argv);
+
+	win_set(shared_mem.camp_ptr, n_fil, n_col);	/* crea acces a finestra oberta pel proces pare */
 
 	//fprintf(stderr, "Starting thread.\n");
 
@@ -233,7 +189,7 @@ int	main(int argc, char **argv)
 		}
 	}
 	end_proc = 1;
-	sendM(shared_mem.mailbox_ptr[(paleta.id + 0)], (void *) NULL, sizeof(int));
+	sendM(shared_mem.mailbox_ptr[(paleta.id + 0)], (void *) 0, sizeof(int));
 	pthread_join(id_mail_thread, NULL);
 	return(0);
 }

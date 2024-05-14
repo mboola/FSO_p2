@@ -24,7 +24,7 @@
 # endif
 
 # ifndef N_ARGS
-#  define N_ARGS 25
+#  define N_ARGS 27
 # endif
 
 # ifndef ARGS_LEN
@@ -36,7 +36,7 @@
 # endif
 
 # ifndef PAL_ORD
-#  define PAL_ORD "pal_ord3"
+#  define PAL_ORD "pal_ord4"
 # endif
 
 #define MIN_FIL 7		/* definir limits de variables globals */
@@ -118,6 +118,9 @@ extern float pil_pf, pil_pc;		/* posicio de la pilota, en valor real */
 extern float pil_vf, pil_vc;		/* velocitat de la pilota, en valor real*/
 extern float pil_ret;			/* percentatge de retard de la pilota */
 
+extern t_paleta	paleta;	/* used in mailbox_funct and pal_ord4 */
+extern char		end_proc;	/* used in mailbox_funct and pal_ord4 */
+
 extern int	n_paletes;
 
 extern int	retard;		/* valor del retard de moviment, en mil.lisegons */
@@ -129,6 +132,8 @@ extern int  control;
 void	*user_functionality();
 void	*ball_functionality();
 void	*timer_functionality();
+
+void	*mailbox_functionality();
 
 void	init_threads(t_lock_data *lock_data, t_mem *mem);
 void	end_threads(t_lock_data lock_data);
