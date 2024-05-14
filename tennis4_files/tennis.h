@@ -98,7 +98,7 @@ typedef struct s_mem
 	int		camp_mem;
 	void	*camp_ptr;
 	int		mailbox_id;
-	void	*mailbox_ptr;
+	int		*mailbox_ptr;
 }		t_mem;
 
 extern int n_fil, n_col, m_por;	/* dimensions del taulell i porteries */
@@ -113,28 +113,19 @@ extern int		screen_id_sem;
 extern int		move_id_sem;
 extern int		pause_id_sem;
 
-extern char	creation_failed;
-
-extern char	count_moves;
-extern char	start;	//Var to initialize the execution of the threads
-extern char	end;	//Var to stop the executation of the threads
-extern char	pause_game;	//Var to pause the executation of the threads
-
 extern int ipil_pf, ipil_pc;		/* posicio de la pilota, en valor enter */
 extern float pil_pf, pil_pc;		/* posicio de la pilota, en valor real */
 extern float pil_vf, pil_vc;		/* velocitat de la pilota, en valor real*/
 extern float pil_ret;			/* percentatge de retard de la pilota */
 
-extern int	total_moves;
 extern int	n_paletes;
-extern int	retard;		/* valor del retard de moviment, en mil.lisegons */
-extern int	moviments;		/* numero max de moviments paletes per acabar el joc */
 
-//custom globals used
+extern int	retard;		/* valor del retard de moviment, en mil.lisegons */
+extern int	total_moves;
+
 extern int	tecla;
 extern int  control;
 
-void	*system_functionality();
 void	*user_functionality();
 void	*ball_functionality();
 void	*timer_functionality();
@@ -142,6 +133,11 @@ void	*timer_functionality();
 void	init_threads(t_lock_data *lock_data, t_mem *mem);
 void	end_threads(t_lock_data lock_data);
 void	end_program(int process_created, t_lock_data *lock_data, t_mem *mem);
+
+t_mem	create_shared_mem(int mida_camp);
 void	remove_mem(t_mem *mem);
+
+void	init_args(char args[N_ARGS][ARGS_LEN], t_mem shared_mem);
+void	update_args(char args[N_ARGS][ARGS_LEN], int i);
 
 #endif

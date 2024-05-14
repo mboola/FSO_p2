@@ -154,7 +154,7 @@ static void	*mailbox_functionality()
 			for (i = 0; i < MAX_PROCS; i++)
 				empty[i] = 0;
 			total_empty = 0;
-			receiveM(*((int*)(shared_mem.mailbox_ptr) + paleta.id * sizeof(int)), msg);	//wait for a msg to be recived from the ball or from other paletes
+			receiveM(shared_mem.mailbox_ptr[(paleta.id + 0)], msg);	//wait for a msg to be recived from the ball or from other paletes
 			if (end_proc)
 				pthread_exit(0);
 			if (msg[0] > 0 && n_col == MIN_COL + 1)	//if I have to go to the left and im at limit
@@ -176,7 +176,7 @@ static void	*mailbox_functionality()
 				if (empty[i] == 1)
 				{
 					total_empty = 1;
-					sendM(*((int*)(shared_mem.mailbox_ptr) + i * sizeof(int)), (void *) msg, sizeof(int));
+					sendM(shared_mem.mailbox_ptr[i], (void *) msg, sizeof(int));
 				}
 			}
 			if (!total_empty)	//if there was not a single paleta touching
@@ -233,7 +233,7 @@ int	main(int argc, char **argv)
 		}
 	}
 	end_proc = 1;
-	sendM(*((int*)(shared_mem.mailbox_ptr) + paleta.id * sizeof(int)), (void *) NULL, sizeof(int));
+	sendM(shared_mem.mailbox_ptr[(paleta.id + 0)], (void *) NULL, sizeof(int));
 	pthread_join(id_mail_thread, NULL);
 	return(0);
 }

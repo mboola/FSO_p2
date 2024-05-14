@@ -8,21 +8,6 @@
 
 #include "tennis.h"
 
-void	remove_mem(t_mem *mem)
-{
-	elim_mem(mem->moviments_mem);
-	elim_mem(mem->creation_failed_mem);
-	elim_mem(mem->start_mem);
-	elim_mem(mem->end_mem);
-	elim_mem(mem->pause_game_mem);
-	elim_mem(mem->control_mem);
-	elim_mem(mem->count_moves_mem);
-	elim_mem(mem->timer_sec_mem);
-	elim_mem(mem->timer_min_mem);
-	elim_mem(mem->camp_mem);
-	exit (2);
-}
-
 static void	thread_creation_error(char threads_init, t_lock_data *lock_data, t_mem *mem)
 {
 	*(mem->creation_failed_ptr) = 1;

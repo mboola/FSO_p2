@@ -32,7 +32,7 @@ TENNIS3_PROC_EXE	=	pal_ord3
 
 TENNIS4_SRC		=	./tennis4_files/
 TENNIS4_FILES	=	${TENNIS4_SRC}ball.c ${TENNIS4_SRC}user.c ${TENNIS4_SRC}timer.c \
-					${TENNIS4_SRC}error_handling.c ${TENNIS4_SRC}tennis4.c
+					${TENNIS4_SRC}error_handling.c ${TENNIS4_SRC}tennis4.c ${TENNIS4_SRC}tennis4_utils.c
 TENNIS4_PROC_FILES	=	${TENNIS4_SRC}pal_ord4.c
 TENNIS4_EXE			=	tennis4
 TENNIS4_PROC_EXE	=	pal_ord4

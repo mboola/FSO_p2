@@ -41,7 +41,7 @@ static int	moure_pilota(void)
 				for (i = 0; i < n_paletes; i++)
 				{
 					if (rh == '0' + i + 1)	//if char found is paleta
-						sendM(((int*)shared_mem.mailbox_ptr)[i], (void *) (intptr_t)((pil_vc > 0) + (pil_vc < 0) * -1), sizeof(int));
+						sendM(*((int*)(shared_mem.mailbox_ptr) + i * sizeof(int)), (void *) (intptr_t)((pil_vc > 0) + (pil_vc < 0) * -1), sizeof(int));
 				}
 
 				pil_vc = -pil_vc;		/* canvia velocitat horitzontal */
