@@ -28,9 +28,10 @@ static void	clear_chars()
 void	*mailbox_functionality()
 {
 	char	msg[TAM_MAX_MIS];
-	char	pal_touched[n_paletes];	//maybe change to n_procs??
+	char	pal_touched[MAX_PROCS];
 	char	has_touched;
-	int		i;
+	int		i, j;
+	char	c;
 
 	while (!(*shared_mem.start_ptr) && !(*shared_mem.creation_failed_ptr));
 	if (!(*shared_mem.creation_failed_ptr))
@@ -57,7 +58,21 @@ void	*mailbox_functionality()
 			}
 
 			// check if all the chars in the direction I must move are empty
-			
+			for (i = 0; i < l_pal; i++)
+			{
+				waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
+				c = win_quincar(paleta.ipo_pf + i, paleta.ipo_pc + msg[0]);
+				signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
+				for (j = 0; j < n_paletes; j++)
+				{
+					if (c == j + '0' + 1)
+					{
+						//fprintf(stderr, "Touched: [%c]\n", c);
+						pal_touched[j] = 1;
+					}
+				}
+			}
+
 			for (i = 0; i < n_paletes; i++)
 			{
 				if (pal_touched[i] == 1)
@@ -66,6 +81,7 @@ void	*mailbox_functionality()
 					sendM(shared_mem.mailbox_ptr[i], (void *) msg, sizeof(int));
 				}
 			}
+
 			if (!has_touched)	//if there was not a single paleta touching
 			{
 				clear_chars();

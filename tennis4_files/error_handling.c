@@ -54,7 +54,6 @@ void	end_threads(t_lock_data lock_data)
 void	end_program(int process_created, t_lock_data *lock_data, t_mem *mem)
 {
 	*(mem->creation_failed_ptr) = 1;
-	fprintf(stderr, "ERROR.\n");
 
 	while (process_created > 0)
 	{
