@@ -14,7 +14,7 @@ FILES_TENNIS = ${FILES} ${TENNIS_MAIN}
 
 HEADER	=	${TENNIS_SRC}tennis.h
 
-EXECS	=	tennis0 tennis1 tennis2 tennis3 tennis3_ord #tennis4 
+EXECS	=	tennis0 tennis1 tennis2 tennis3 tennis3_ord tennis4 tennis4_ord
 
 THREAD_HEADER	=	${LIB_DIR}winsuport.h
 THREAD_FILES	=	${LIB_DIR}winsuport.c
@@ -29,7 +29,7 @@ PROCESS_OBJECTS	=	${PROCESS_FILES:.c=.o}
 
 
 ####### RULES #######
-all: tennis0 tennis1 tennis2 tennis3 #tennis4
+all: tennis0 tennis1 tennis2 tennis3 tennis4
 
 tennis0: TENNIS_SRC := ./tennis0_files/
 tennis0: TENNIS_EXE := tennis0
@@ -52,9 +52,11 @@ tennis3: TENNIS_EXE_CHILD := tennis3_ord
 tennis3: TENNIS_MAIN := ${TENNIS_SRC}tennis3.c
 tennis3: TENNIS_MAIN_CHILD := ${TENNIS_SRC}pal_ord3.c
 
-#tennis4: TENNIS_SRC := ./tennis4_files/
-#tennis4: TENNIS_EXE := tennis0_exe
-#tennis4: TENNIS_MAIN := tennis4.c
+tennis3: TENNIS_SRC := ./tennis4_files/
+tennis3: TENNIS_EXE := tennis4
+tennis3: TENNIS_EXE_CHILD := tennis4_ord
+tennis3: TENNIS_MAIN := ${TENNIS_SRC}tennis4.c
+tennis3: TENNIS_MAIN_CHILD := ${TENNIS_SRC}pal_ord4.c
 
 tennis3 tennis4: ${PROCESS_OBJECTS} ${PROCESS_HEADER}
 	gcc ${FLAGS_EXE} ${FILES_TENNIS} ${PROCESS_OBJECTS} -o ${TENNIS_EXE} -lcurses ${INCLUDE}
