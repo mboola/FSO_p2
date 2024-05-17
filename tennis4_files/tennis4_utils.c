@@ -1,4 +1,3 @@
-
 #include "tennis.h"
 
 void	init_args(char args[N_ARGS][ARGS_LEN], t_mem shared_mem)

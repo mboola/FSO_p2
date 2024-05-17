@@ -1,11 +1,3 @@
-/***********************************************************/
-/*                                                         */
-/*                      tennis.h                           */
-/*                                                         */
-/* 				blablabla			                       */
-/*														   */
-/***********************************************************/
-
 #include "tennis.h"
 
 static void	thread_creation_error(char threads_init, t_lock_data *lock_data, t_mem *mem)

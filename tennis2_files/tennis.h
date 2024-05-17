@@ -51,8 +51,6 @@ extern t_timer	timer;
 
 extern pthread_mutex_t	screen_control;		//Lock to control the resource screen
 extern pthread_mutex_t	movement_control;	//Lock to control the moviments value
-extern pthread_mutex_t	timer_pause_control;
-extern pthread_mutex_t	user_pause_control;
 extern pthread_mutex_t	ball_pause_control;
 extern pthread_mutex_t	computer_pause_control[MAX_PAL];
 
@@ -61,7 +59,7 @@ extern char	creation_failed;
 extern char	count_moves;
 extern char	start;	//Var to initialize the execution of the threads
 extern char	end;	//Var to stop the executation of the threads
-extern char	pause_game;	//Var to pause the executation of the threads
+extern char	pause_control;	//Var to pause the executation of the threads
 
 extern int ipil_pf, ipil_pc;		/* posicio de la pilota, en valor enter */
 extern float pil_pf, pil_pc;		/* posicio de la pilota, en valor real */
@@ -84,5 +82,7 @@ void	*timer_functionality();
 
 void	init_threads(t_lock_data *lock_data);
 void	end_threads(t_lock_data lock_data);
+
+int unpause_threads();
 
 #endif

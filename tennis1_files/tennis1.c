@@ -204,8 +204,7 @@ int inicialitza_joc(void)
 	pil_pf = ipil_pf; pil_pc = ipil_pc;	/* fixar valor real posicio pilota */
 	win_escricar(ipil_pf, ipil_pc, '.',INVERS);	/* dibuix inicial pilota */
 
-	sprintf(strin,"Tecles: \'%c\'-> amunt, \'%c\'-> avall, RETURN-> sortir. Temps: [%.2d:%.2d].",
-			TEC_AMUNT, TEC_AVALL, 0, 0);
+	sprintf(strin,"Temps: [%.2d:%.2d]    Moviments: %d", timer.min, timer.sec, moviments);
 	win_escristr(strin);
 	return(0);
 }

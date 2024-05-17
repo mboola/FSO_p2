@@ -7,7 +7,6 @@
 static void mou_paleta_ordinador(t_paleta *paleta)
 {
 	int f_h;
-	/* char rh,rv,rd; */
 
 	f_h = paleta->po_pf + paleta->v_pal;		/* posicio hipotetica de la paleta */
 	if (f_h != paleta->ipo_pf)	/* si pos. hipotetica no coincideix amb pos. actual */
@@ -19,7 +18,7 @@ static void mou_paleta_ordinador(t_paleta *paleta)
 				win_escricar(paleta->ipo_pf,paleta->ipo_pc,' ',NO_INV);      /* esborra primer bloc */
 				paleta->po_pf += paleta->v_pal; paleta->ipo_pf = paleta->po_pf;		/* actualitza posicio */
 				win_escricar(paleta->ipo_pf+l_pal-1,paleta->ipo_pc,paleta->id,INVERS); /* impr. ultim bloc */
-					if (moviments > 0) moviments--;    /* he fet un moviment de la paleta */
+				moviments++;    /* he fet un moviment de la paleta */
 			}
 			else		/* si hi ha obstacle, canvia el sentit del moviment */
 				paleta->v_pal = -paleta->v_pal;
@@ -30,14 +29,15 @@ static void mou_paleta_ordinador(t_paleta *paleta)
 				{
 				win_escricar(paleta->ipo_pf+l_pal-1,paleta->ipo_pc,' ',NO_INV); /* esbo. ultim bloc */
 				paleta->po_pf += paleta->v_pal; paleta->ipo_pf = paleta->po_pf;		/* actualitza posicio */
-				win_escricar(paleta->ipo_pf,paleta->ipo_pc,paleta->id,INVERS);	/* impr. primer bloc */
-					if (moviments > 0) moviments--;    /* he fet un moviment de la paleta */
+				win_escricar(paleta->ipo_pf,paleta->ipo_pc,paleta->id,INVERS);	 /* impr. primer bloc */
+				moviments++;    /* he fet un moviment de la paleta */
 				}
 			else		/* si hi ha obstacle, canvia el sentit del moviment */
 				paleta->v_pal = -paleta->v_pal;
 		}
 	}
-	else paleta->po_pf += paleta->v_pal; 	/* actualitza posicio vertical real de la paleta */
+	else
+		paleta->po_pf += paleta->v_pal; 	/* actualitza posicio vertical real de la paleta */
 }
 
 void	*system_functionality(void *paleta_ptr)

@@ -44,13 +44,13 @@ void	*mailbox_functionality()
 			receiveM(shared_mem.mailbox_ptr[(paleta.id + 0)], msg);	//wait for a msg to be recived from the ball or from other paletes
 			if (end_proc)
 				pthread_exit(0);
-			if (msg[0] > 0 && paleta.ipo_pc == MAX_COL)	// If I have to go to the right and I'm at the right limit
+			if (msg[0] > 0 && paleta.ipo_pc == (n_col - 1))	// If I have to go to the right and I'm at the right limit
 			{
 				clear_chars();
 				end_proc = 1;
 				pthread_exit(0);
 			}
-			else if (msg[0] < 0 && paleta.ipo_pc == MIN_COL + 1) // If I have to go to the left and I'm at the left limit
+			else if (msg[0] < 0 && paleta.ipo_pc == 0) // If I have to go to the left and I'm at the left limit
 			{
 				clear_chars();
 				end_proc = 1;
@@ -60,14 +60,13 @@ void	*mailbox_functionality()
 			// check if all the chars in the direction I must move are empty
 			for (i = 0; i < l_pal; i++)
 			{
-				waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
+				waitS(screen_id_sem);            /* tanca semafor */
 				c = win_quincar(paleta.ipo_pf + i, paleta.ipo_pc + msg[0]);
-				signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
+				signalS(screen_id_sem);          /* obre semafor */ 
 				for (j = 0; j < n_paletes; j++)
 				{
 					if (c == j + '0' + 1)
 					{
-						//fprintf(stderr, "Touched: [%c]\n", c);
 						pal_touched[j] = 1;
 					}
 				}

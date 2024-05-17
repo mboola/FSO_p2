@@ -1,9 +1,8 @@
-
 /*****************************************************************************/
-/*									     */
-/*				     Tennis0.c				     */
-/*									     */
-/*  Programa inicial d'exemple per a les practiques 2 i 3 de FSO.	     */
+/*									                                         */
+/*				     Tennis0.c				                                 */
+/*									                                         */
+/*  Programa inicial d'exemple per a les practiques 2 i 3 de FSO.	         */
 /*     Es tracta del joc del tennis: es dibuixa un camp de joc rectangular   */
 /*     amb una porteria a cada costat, una paleta per l'usuari, una paleta   */
 /*     per l'ordinador i una pilota que va rebotant per tot arreu; l'usuari  */
@@ -12,14 +11,14 @@
 /*     tracta d'intentar col.locar la pilota a la porteria de l'ordinador    */
 /*     (porteria de la dreta), abans que l'ordinador aconseguixi col.locar   */
 /*     la pilota dins la porteria de l'usuari (porteria de l'esquerra).      */
-/*									     */
-/*  Arguments del programa:						     */
+/*									                                         */
+/*  Arguments del programa:						                             */
 /*     per controlar la posicio de tots els elements del joc, cal indicar    */
 /*     el nom d'un fitxer de text que contindra la seguent informacio:	     */
-/*		n_fil n_col m_por l_pal					     */
-/*		pil_pf pil_pc pil_vf pil_vc pil_ret			     */
-/*		ipo_pf ipo_pc po_vf pal_ret				     */
-/*									     */
+/*		n_fil n_col m_por l_pal					                             */
+/*		pil_pf pil_pc pil_vf pil_vc pil_ret			                         */
+/*		ipo_pf ipo_pc po_vf pal_ret				                             */
+/*									                                         */
 /*     on 'n_fil', 'n_col' son les dimensions del taulell de joc, 'm_por'    */
 /*     es la mida de les dues porteries, 'l_pal' es la longitud de les dues  */
 /*     paletes; 'pil_pf', 'pil_pc' es la posicio inicial (fila,columna) de   */
@@ -28,31 +27,31 @@
 /*     finalment, 'ipo_pf', 'ipo_pc' indicara la posicio del primer caracter */
 /*     de la paleta de l'ordinador, mentre que la seva velocitat vertical    */
 /*     ve determinada pel parametre 'po_fv', i pal_ret el percentatge de     */
-/*     retard en el moviment de la paleta de l'ordinador.		     */
-/*									     */
+/*     retard en el moviment de la paleta de l'ordinador.		             */
+/*									                                         */
 /*     A mes, es podra afegir un segon argument opcional per indicar el      */
 /*     retard de moviment de la pilota i la paleta de l'ordinador (en ms);   */
 /*     el valor d'aquest parametre per defecte es 100 (1 decima de segon).   */
-/*									     */
-/*  Compilar i executar:					  	     */
+/*									                                         */
+/*  Compilar i executar:					  	                             */
 /*     El programa invoca les funcions definides en 'winsuport.o', les       */
 /*     quals proporcionen una interficie senzilla per a crear una finestra   */
 /*     de text on es poden imprimir caracters en posicions especifiques de   */
 /*     la pantalla (basada en CURSES); per tant, el programa necessita ser   */
-/*     compilat amb la llibreria 'curses':				     */
-/*									     */
-/*	   $ gcc tennis0.c winsuport.o -o tennis0 -lcurses		     */
-/*	   $ tennis0 fit_param [retard]					     */
-/*									     */
-/*  Codis de retorn:						  	     */
-/*     El programa retorna algun dels seguents codis al SO:		     */
-/*	0  ==>  funcionament normal					     */
-/*	1  ==>  numero d'arguments incorrecte 				     */
-/*	2  ==>  fitxer no accessible					     */
-/*	3  ==>  dimensions del taulell incorrectes			     */
-/*	4  ==>  parametres de la pilota incorrectes			     */
-/*	5  ==>  parametres d'alguna de les paletes incorrectes		     */
-/*	6  ==>  no s'ha pogut crear el camp de joc (no pot iniciar CURSES)   */
+/*     compilat amb la llibreria 'curses':				                     */
+/*									                                         */
+/*	   $ gcc tennis0.c winsuport.o -o tennis0 -lcurses		                 */
+/*	   $ tennis0 fit_param [retard]					                         */
+/*									                                         */
+/*  Codis de retorn:						  	                             */
+/*     El programa retorna algun dels seguents codis al SO:		             */
+/*	0  ==>  funcionament normal					                             */
+/*	1  ==>  numero d'arguments incorrecte 				                     */
+/*	2  ==>  fitxer no accessible					                         */
+/*	3  ==>  dimensions del taulell incorrectes			                     */
+/*	4  ==>  parametres de la pilota incorrectes			                     */
+/*	5  ==>  parametres d'alguna de les paletes incorrectes		             */
+/*	6  ==>  no s'ha pogut crear el camp de joc (no pot iniciar CURSES)       */
 /*****************************************************************************/
 
 #include "tennis.h"
@@ -257,9 +256,6 @@ static void	init_args(char args[N_ARGS][ARGS_LEN], t_mem shared_mem)
 	sprintf(args[12], "%d", l_pal);
 	sprintf(args[13], "%d", n_fil);
 	sprintf(args[14], "%d", n_col);
-	sprintf(args[21], "%d", screen_id_sem);
-	sprintf(args[22], "%d", move_id_sem);
-	sprintf(args[23], "%d", pause_id_sem);
 }
 
 static void	update_args(char args[N_ARGS][ARGS_LEN], int i)
@@ -327,8 +323,8 @@ int main(int n_args, const char *ll_args[])
 
 	win_set(shared_mem.camp_ptr, n_fil, n_col);
 
-	if (inicialitza_joc() !=0)    /* intenta crear el taulell de joc */
-		exit(4);   /* aborta si hi ha algun problema amb taulell */
+	if (inicialitza_joc() !=0)  /* intenta crear el taulell de joc */
+		exit(4);                /* aborta si hi ha algun problema amb taulell */
 
 	//Variables used get a controlled execution
 	*(shared_mem.creation_failed_ptr) = 0;
@@ -348,19 +344,15 @@ int main(int n_args, const char *ll_args[])
 		{
 			//execute pal_ord3.c
 			update_args(args, i);
-			//fprintf(stderr, "Args main: [%s].\n", args[0]);
 			execlp(PAL_ORD_EXE, PAL_ORD,
 				args[0], args[1], args[2], args[3], args[4], args[5], args[6],	//mem
 				args[7], args[8],	//timer
 				args[9],	//camp
 				args[10], args[11], args[12], args[13], args[14],	//globals
-				args[15], args[16], args[17], args[18], args[19], args[20],	//paleta
-				args[21], args[22],	args[23], //semaphore
-				NULL);
+				args[15], args[16], args[17], args[18], args[19], args[20],	NULL);//paleta
 			exit(0);
 		}
 	}
-	//fprintf(stderr, "All procs created.\n");
 	*shared_mem.start_ptr = 1;
 
 	/********** bucle principal del joc **********/
@@ -368,9 +360,9 @@ int main(int n_args, const char *ll_args[])
 		((!*shared_mem.count_moves_ptr && *shared_mem.moviments_ptr == 0) || (*shared_mem.moviments_ptr > 0) || *shared_mem.moviments_ptr == -1)
 		&& !*shared_mem.end_ptr)
 	{
-		waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
-		win_update();			/* actualitza visualitzacio CURSES */
-		signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
+		waitS(screen_id_sem);    /* tanca semafor */
+		win_update();			 /* actualitza visualitzacio CURSES */
+		signalS(screen_id_sem);  /* obre semafor */ 
 	}
 
 	*shared_mem.end_ptr = 1;
@@ -379,6 +371,7 @@ int main(int n_args, const char *ll_args[])
 	for (i = 0; i < n_paletes; i++)
 		wait(NULL);
 	
+	signalS(pause_id_sem);  /* intentem despausar el joc per evitar violacions de segment */
 	end_threads(lock_data);
 	win_fi();
 	elim_sem(screen_id_sem);

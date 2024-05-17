@@ -163,39 +163,39 @@ int inicialitza_joc(void)
 	int j;
 	char strin[60];
 
-	i_port = n_fil/2 - m_por/2;	    /* crea els forats de la porteria */
+	i_port = n_fil/2 - m_por/2;	           /* crea els forats de la porteria */
 	if (n_fil%2 == 0) i_port--;
 	if (i_port == 0) i_port=1;
 	f_port = i_port + m_por -1;
 	for (i = i_port; i <= f_port; i++)
 	{
-		waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
+		waitS(screen_id_sem);              /* tanca semafor */
 		win_escricar(i,0,' ',NO_INV);
 		win_escricar(i,n_col-1,' ',NO_INV);
-		signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
+		signalS(screen_id_sem);            /* obre semafor */ 
 	}
 
 
 	ipu_pf = n_fil/2; ipu_pc = 3;		/* inicialitzar pos. paletes */
 	if (ipu_pf+l_pal >= n_fil-3) ipu_pf = 1;
-	for (i=0; i< l_pal; i++)	    /* dibuixar paleta inicialment */
+	for (i=0; i< l_pal; i++)	        /* dibuixar paleta inicialment */
 	{
-		waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
+		waitS(screen_id_sem);                    /* tanca semafor */
 		win_escricar(ipu_pf +i, ipu_pc, '0',INVERS);
 		for (j = 0; j < n_paletes; j++)
 			win_escricar(paletes[j].ipo_pf + i, paletes[j].ipo_pc, paletes[j].id + '0' + 1, INVERS);
-		signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
+		signalS(screen_id_sem);                  /* obre semafor */ 
 	}
-	for (j = 0; j < n_paletes; j++)	/* fixar valor real paleta ordinador */
+	for (j = 0; j < n_paletes; j++)	             /* fixar valor real paleta ordinador */
 		paletes[j].po_pf = paletes[j].ipo_pf;
 
-	pil_pf = ipil_pf; pil_pc = ipil_pc;	/* fixar valor real posicio pilota */
-	waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
-	win_escricar(ipil_pf, ipil_pc, '.',INVERS);	/* dibuix inicial pilota */
+	pil_pf = ipil_pf; pil_pc = ipil_pc;	         /* fixar valor real posicio pilota */
+	waitS(screen_id_sem);                        /* tanca semafor */
+	win_escricar(ipil_pf, ipil_pc, '.',INVERS);	 /* dibuix inicial pilota */
 
 	sprintf(strin,"Temps: [%.2d:%.2d]. Moviments: [%d/%d].", 0, 0, *(shared_mem.moviments_ptr), total_moves);
 	win_escristr(strin);
-	signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
+	signalS(screen_id_sem);                      /* obre semafor */ 
 	return(0);
 }
 
@@ -254,8 +254,8 @@ int main(int n_args, const char *ll_args[])
 
 	win_set(shared_mem.camp_ptr, n_fil, n_col);
 
-	if (inicialitza_joc() !=0)    /* intenta crear el taulell de joc */
-		exit(4);   /* aborta si hi ha algun problema amb taulell */
+	if (inicialitza_joc() !=0)  /* intenta crear el taulell de joc */
+		exit(4);                /* aborta si hi ha algun problema amb taulell */
 
 	//Variables used get a controlled execution
 	*(shared_mem.creation_failed_ptr) = 0;
@@ -266,7 +266,6 @@ int main(int n_args, const char *ll_args[])
 
 	init_threads(&lock_data, &shared_mem);
 	init_args(args, shared_mem);
-	//fprintf(stderr, "Star process:\n");
 	for (i = 0; i < n_paletes; i++)
 	{
 		pids[i] = fork();
@@ -275,7 +274,6 @@ int main(int n_args, const char *ll_args[])
 		else if (pids[i] == (pid_t) 0) //child
 		{
 			update_args(args, i);
-			//fprintf(stderr, "Args main: [%s].\n", args[0]);
 			execlp(PAL_ORD_EXE, PAL_ORD,
 				args[0], args[1], args[2], args[3], args[4], args[5], args[6],	//mem
 				args[7], args[8],	//timer
@@ -289,7 +287,6 @@ int main(int n_args, const char *ll_args[])
 			exit(0);
 		}
 	}
-	//fprintf(stderr, "All procs created.\n");
 	*shared_mem.start_ptr = 1;
 
 	/********** bucle principal del joc **********/
@@ -297,13 +294,15 @@ int main(int n_args, const char *ll_args[])
 		((!*shared_mem.count_moves_ptr && *shared_mem.moviments_ptr == 0) || (*shared_mem.moviments_ptr > 0) || *shared_mem.moviments_ptr == -1)
 		&& !*shared_mem.end_ptr && !*shared_mem.creation_failed_ptr)
 	{
-		waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
+		waitS(screen_id_sem);   /* tanca semafor */
 		win_update();			/* actualitza visualitzacio CURSES */
-		signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
+		signalS(screen_id_sem); /* obre semafor */ 
+		win_retard(retard);
 	}
 
 	*shared_mem.end_ptr = 1;
 
+	signalS(pause_id_sem);  /* intentem despausar el joc per evitar violacions de segment */
 	for (i = 0; i < n_paletes; i++)
 		wait(NULL);
 

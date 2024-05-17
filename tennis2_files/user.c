@@ -49,11 +49,24 @@ static void	mou_paleta_usuari(int tecla)
 		pthread_mutex_unlock(&screen_control); /* obre semafor */
 }
 
+int pause_threads()
+{
+	pthread_mutex_lock(&ball_pause_control);
+	for (int i = 0; i < n_paletes; i++)
+		pthread_mutex_lock(&computer_pause_control[i]);
+	return 1;
+}
+
+int unpause_threads()
+{
+	pthread_mutex_unlock(&ball_pause_control);
+	for (int i = 0; i < n_paletes; i++)
+		pthread_mutex_unlock(&computer_pause_control[i]);
+	return 0;
+}
+
 void	*user_functionality()
 {
-	char	pause_control;
-	int		i;
-
 	pause_control = 0;
 	while (!start && !creation_failed);
 	if (!creation_failed)
@@ -67,19 +80,11 @@ void	*user_functionality()
 			{
 				if (!pause_control)
 				{
-					pthread_mutex_lock(&timer_pause_control);
-					pthread_mutex_lock(&ball_pause_control);
-					for (i = 0; i < n_paletes; i++)
-						pthread_mutex_lock(&computer_pause_control[i]);
-					pause_control = 1;
+					pause_control = pause_threads();
 				}
 				else
 				{
-					pthread_mutex_unlock(&timer_pause_control);
-					pthread_mutex_unlock(&ball_pause_control);
-					for (i = 0; i < n_paletes; i++)
-						pthread_mutex_unlock(&computer_pause_control[i]);
-					pause_control = 0;
+					pause_control = unpause_threads();
 				}
 			}
 			else if (tecla != 0 && !pause_control)

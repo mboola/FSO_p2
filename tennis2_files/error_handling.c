@@ -1,11 +1,3 @@
-/***********************************************************/
-/*                                                         */
-/*                      tennis.h                           */
-/*                                                         */
-/* 				blablabla			                       */
-/*														   */
-/***********************************************************/
-
 #include "tennis.h"
 
 static void	destroy_mutex(pthread_mutex_t *mutex_to_destroy, char *value)
@@ -25,8 +17,6 @@ static void	mutex_creation_error(char mutex_init)
 	printf("Program initialization failed.\n");
 	destroy_mutex(&screen_control, &value);		// Screen lock destroyed
 	destroy_mutex(&movement_control, &value);	// Movement lock destroyed
-	destroy_mutex(&user_pause_control, &value);	// User pause lock destroyed
-	destroy_mutex(&timer_pause_control, &value);// Timer pause lock destroyed
 	destroy_mutex(&ball_pause_control, &value);	// Ball pause lock destroyed
 	for (i = 0; i < n_paletes; i++)
 		destroy_mutex(&computer_pause_control[i], &value);	// Computer pause lock destroyed
@@ -80,12 +70,6 @@ void	init_threads(t_lock_data *lock_data)
 	if (pthread_mutex_init(&movement_control, NULL))	// Movement lock initialized
 		mutex_creation_error(mutex_init);
 	mutex_init++;
-	if (pthread_mutex_init(&user_pause_control, NULL))
-		mutex_creation_error(mutex_init);
-	mutex_init++;
-	if (pthread_mutex_init(&timer_pause_control, NULL))
-		mutex_creation_error(mutex_init);
-	mutex_init++;
 	if (pthread_mutex_init(&ball_pause_control, NULL))
 		mutex_creation_error(mutex_init);
 	mutex_init++;
@@ -126,8 +110,6 @@ void	end_threads(t_lock_data lock_data)
 
 	pthread_mutex_destroy(&screen_control);		// Screen sempahore destroyed
 	pthread_mutex_destroy(&movement_control);	// movement sempahore destroyed
-	pthread_mutex_destroy(&user_pause_control);		// Pause lock initialized
-	pthread_mutex_destroy(&timer_pause_control);	// Pause lock initialized
 	pthread_mutex_destroy(&ball_pause_control);		// Pause lock initialized
 	for (i = 0; i < n_paletes; i++)
 		pthread_mutex_destroy(&computer_pause_control[i]);		// Pause lock initialized

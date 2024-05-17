@@ -15,7 +15,6 @@ void	*timer_functionality()
 		while(!end)
 		{
 			sleep(1);
-			pthread_mutex_lock(&timer_pause_control);
 			timer.sec++;
 			if (timer.sec >= 60)
 			{
@@ -26,7 +25,6 @@ void	*timer_functionality()
 			pthread_mutex_lock(&screen_control); /* tanca semafor */
 			win_escristr(strin);
 			pthread_mutex_unlock(&screen_control); /* obre semafor */
-			pthread_mutex_unlock(&timer_pause_control);
 		}
 	}
 	pthread_exit(0);

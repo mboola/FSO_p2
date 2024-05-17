@@ -68,8 +68,6 @@ t_timer		timer;
 
 pthread_mutex_t	screen_control = PTHREAD_MUTEX_INITIALIZER;		//Lock to control the resource screen
 pthread_mutex_t	movement_control = PTHREAD_MUTEX_INITIALIZER;	//Lock to control the moviments value
-pthread_mutex_t user_pause_control = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t	timer_pause_control = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t	ball_pause_control = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t	computer_pause_control[MAX_PAL];
 
@@ -89,7 +87,7 @@ char	creation_failed;
 char	count_moves;
 char	start;	//Var to initialize the execution of the threads
 char	end;	//Var to stop the executation of the threads
-char	pause_game;	//Var to pause the executation of the threads
+char	pause_control;	//Var to pause the executation of the threads
 
 int	tecla;
 int	control;
@@ -252,7 +250,7 @@ int main(int n_args, const char *ll_args[])
 	
 	start = 0;
 	end = 0;
-	pause_game = 0;
+	pause_control = 0;
 	creation_failed = 0;
 	control = -1;
 	init_threads(&lock_data);
@@ -262,6 +260,8 @@ int main(int n_args, const char *ll_args[])
 	while ((tecla != TEC_RETURN) && (control == -1) && ((!count_moves && moviments == 0) || (moviments > 0) || moviments == -1) && !end);
 
 	end = 1;
+	win_fi();
+	unpause_threads(); /* intenta despausar el joc per evitar violacions de segment */
 	end_threads(lock_data);
 
 	if (control == 0 || moviments == 0)

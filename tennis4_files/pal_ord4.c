@@ -24,62 +24,62 @@ static void mou_paleta_ordinador(t_paleta *paleta, t_mem shared_mem)
 	char	strin[60];
 	/* char rh,rv,rd; */
 
-	f_h = paleta->po_pf + paleta->v_pal;		/* posicio hipotetica de la paleta */
-	if (f_h != paleta->ipo_pf)	/* si pos. hipotetica no coincideix amb pos. actual */
+	f_h = paleta->po_pf + paleta->v_pal;     /* posicio hipotetica de la paleta */
+	if (f_h != paleta->ipo_pf)	             /* si pos. hipotetica no coincideix amb pos. actual */
 	{
-		if (paleta->v_pal > 0.0)			/* verificar moviment cap avall */
+		if (paleta->v_pal > 0.0)			 /* verificar moviment cap avall */
 		{
-			waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
-			if (win_quincar(f_h+l_pal - 1, paleta->ipo_pc) == ' ')   /* si no hi ha obstacle */
+			waitS(screen_id_sem);                                   /* tanca semafor */
+			if (win_quincar(f_h+l_pal - 1, paleta->ipo_pc) == ' ')  /* si no hi ha obstacle */
 			{
-				win_escricar(paleta->ipo_pf, paleta->ipo_pc, ' ', NO_INV);      /* esborra primer bloc */
-				paleta->po_pf += paleta->v_pal; paleta->ipo_pf = paleta->po_pf;		/* actualitza posicio */
-				win_escricar(paleta->ipo_pf + l_pal - 1, paleta->ipo_pc, paleta->id + '0' + 1, INVERS); /* impr. ultim bloc */
-				signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */
-				waitS(move_id_sem);//pthread_mutex_lock(&movement_control); /* tanca semafor */
+				win_escricar(paleta->ipo_pf, paleta->ipo_pc, ' ', NO_INV);                               /* esborra primer bloc */
+				paleta->po_pf += paleta->v_pal; paleta->ipo_pf = paleta->po_pf;		                     /* actualitza posicio */
+				win_escricar(paleta->ipo_pf + l_pal - 1, paleta->ipo_pc, paleta->id + '0' + 1, INVERS);  /* impr. ultim bloc */
+				signalS(screen_id_sem);                                                                  /* obre semafor */
+				waitS(move_id_sem);                                                                      /* tanca semafor */
 				if (*(shared_mem.count_moves_ptr) && *(shared_mem.moviments_ptr) > 0)
 				{
-					(*shared_mem.moviments_ptr)--;    /* he fet un moviment de la paleta */
-					signalS(move_id_sem);//pthread_mutex_unlock(&movement_control); /* obre semafor */
+					(*shared_mem.moviments_ptr)--;       /* he fet un moviment de la paleta */
+					signalS(move_id_sem);                /* obre semafor */
 					sprintf(strin,"Temps: [%.2d:%.2d]. Moviments: [%d/%d].", *shared_mem.timer_min_ptr, *shared_mem.timer_sec_ptr, *(shared_mem.moviments_ptr), total_moves);
-					waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
+					waitS(screen_id_sem);                /* tanca semafor */
 					win_escristr(strin);
-					signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
+					signalS(screen_id_sem);              /* obre semafor */ 
 				}
 				else
-					signalS(move_id_sem);//pthread_mutex_unlock(&movement_control); /* obre semafor */
+					signalS(move_id_sem);         /* obre semafor */
 			}
 			else		/* si hi ha obstacle, canvia el sentit del moviment */
 			{
-				signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */
+				signalS(screen_id_sem);           /* obre semafor */
 				paleta->v_pal = -paleta->v_pal;
 			}
 		}
 		else			/* verificar moviment cap amunt */
 		{
-			waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
-			if (win_quincar(f_h, paleta->ipo_pc) == ' ')        /* si no hi ha obstacle */
+			waitS(screen_id_sem);                           /* tanca semafor */
+			if (win_quincar(f_h, paleta->ipo_pc) == ' ')    /* si no hi ha obstacle */
 			{
-				win_escricar(paleta->ipo_pf + l_pal - 1, paleta->ipo_pc, ' ', NO_INV); /* esbo. ultim bloc */
-				paleta->po_pf += paleta->v_pal; paleta->ipo_pf = paleta->po_pf;		/* actualitza posicio */
+				win_escricar(paleta->ipo_pf + l_pal - 1, paleta->ipo_pc, ' ', NO_INV);      /* esbo. ultim bloc */
+				paleta->po_pf += paleta->v_pal; paleta->ipo_pf = paleta->po_pf;		        /* actualitza posicio */
 				win_escricar(paleta->ipo_pf, paleta->ipo_pc, paleta->id + '0' + 1, INVERS);	/* impr. primer bloc */
-				signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
-				waitS(move_id_sem);//pthread_mutex_lock(&movement_control); /* tanca semafor */
+				signalS(screen_id_sem);                                                     /* obre semafor */ 
+				waitS(move_id_sem);                                                         /* tanca semafor */
 				if (*(shared_mem.count_moves_ptr) && *(shared_mem.moviments_ptr) > 0)
 				{
-					(*shared_mem.moviments_ptr)--;    /* he fet un moviment de la paleta */
-					signalS(move_id_sem);//pthread_mutex_unlock(&movement_control); /* obre semafor */
+					(*shared_mem.moviments_ptr)--;      /* he fet un moviment de la paleta */
+					signalS(move_id_sem);               /* obre semafor */
 					sprintf(strin,"Temps: [%.2d:%.2d]. Moviments: [%d/%d].", *shared_mem.timer_min_ptr, *shared_mem.timer_sec_ptr, *(shared_mem.moviments_ptr), total_moves);
-					waitS(screen_id_sem);//pthread_mutex_lock(&screen_control); /* tanca semafor */
+					waitS(screen_id_sem);               /* tanca semafor */
 					win_escristr(strin);
-					signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */ 
+					signalS(screen_id_sem);             /* obre semafor */ 
 				}
 				else
-					signalS(move_id_sem);//pthread_mutex_unlock(&movement_control); /* obre semafor */
+					signalS(move_id_sem);      /* obre semafor */
 			}
 			else		/* si hi ha obstacle, canvia el sentit del moviment */
 			{
-				signalS(screen_id_sem);//pthread_mutex_unlock(&screen_control); /* obre semafor */
+				signalS(screen_id_sem);        /* obre semafor */
 				paleta->v_pal = -paleta->v_pal;
 			}
 		}
@@ -166,8 +166,6 @@ int	main(int argc, char **argv)
 
 	win_set(shared_mem.camp_ptr, n_fil, n_col);	/* crea acces a finestra oberta pel proces pare */
 
-	//fprintf(stderr, "Starting thread.\n");
-
 	//initialize threads
 	if (pthread_create(&id_mail_thread, NULL, mailbox_functionality, NULL))
 	{
@@ -175,17 +173,15 @@ int	main(int argc, char **argv)
 		return (0);
 	}
 
-	//fprintf(stderr, "Proc created.\n");
 	while (!(*shared_mem.start_ptr) && !(*shared_mem.creation_failed_ptr));
 	if (!(*shared_mem.creation_failed_ptr))
 	{
 		while(!(*shared_mem.end_ptr) && !end_proc)
 		{
-			//fprintf(stderr, "Loop.\n");
 			mou_paleta_ordinador(&paleta, shared_mem);
 			win_retard(retard);
-			waitS(pause_id_sem);//pthread_mutex_lock(&pause_control);
-			signalS(pause_id_sem);//pthread_mutex_unlock(&pause_control);
+			waitS(pause_id_sem);
+			signalS(pause_id_sem);
 		}
 	}
 	end_proc = 1;
